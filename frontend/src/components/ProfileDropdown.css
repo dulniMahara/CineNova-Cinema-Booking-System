@@ -1,0 +1,122 @@
+.profile-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-trigger {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.profile-trigger:hover {
+  transform: scale(1.05);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  width: 320px;
+  background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-header {
+  padding: 30px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #141436 0%, #1a1a3e 100%);
+  border-radius: 12px 12px 0 0;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 2px solid rgba(255, 61, 0, 0.3);
+}
+
+.profile-header h3 {
+  margin: 15px 0 5px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.profile-email {
+  font-size: 14px;
+  opacity: 0.8;
+  margin: 0;
+  color: #ccc;
+}
+
+.profile-role-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 12px;
+  background: #ff3d00;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+}
+
+.profile-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0;
+}
+
+.profile-menu {
+  padding: 8px 0;
+}
+
+.profile-menu-item {
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 15px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.profile-menu-item:hover {
+  background: rgba(255, 61, 0, 0.2);
+  padding-left: 25px;
+}
+
+.profile-menu-item.logout {
+  color: #fff;
+}
+
+.profile-menu-item.logout:hover {
+  background: rgba(255, 61, 0, 0.2);
+  color: #ff3d00;
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 24px;
+  display: inline-block;
+  color: #fff;
+}

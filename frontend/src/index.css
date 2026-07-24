@@ -1,0 +1,36 @@
+:root {
+  --primary-emerald: #1FA463;       /* Luxury emerald green accent */
+  --primary-emerald-light: #2bc37b; /* Accent hover emerald */
+  --primary-emerald-dark: #125e39;
+  --accent-gold: #D4AF37;           /* Metallic luxury gold */
+  --accent-gold-hover: #e5c05b;     /* Light gold */
+  --bg-matte-black: #060B08;        /* Matte black background */
+  --bg-charcoal: #0E1713;           /* Secondary background */
+  --bg-cards: #16231C;              /* Card background */
+  --bg-charcoal-light: #1c2e25;
+  --text-primary: #ffffff;
+  --text-secondary: #9ab0a5;        /* Muted sage-gray text */
+  --glass-bg: rgba(22, 35, 28, 0.45);
+  --glass-border: rgba(212, 175, 55, 0.12); /* Subtle gold tint border */
+  --glass-blur: blur(16px);
+  --font-display: 'Playfair Display', serif;
+  --font-sans: 'Outfit', 'Inter', 'Segoe UI', sans-serif;
+  --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--bg-matte-black);
+  color: var(--text-primary);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}

@@ -1,0 +1,375 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+.booking-container {
+  background: radial-gradient(circle at top, #1a1a3a 0%, #0a0a1a 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  padding: 20px;
+}
+
+.booking-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  width: 100%;
+  max-width: 800px; /* Increased width to prevent title wrapping */
+  min-height: 65vh;
+  padding: 60px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 50px;
+}
+
+.booking-card h1 {
+  color: #ff4d00;
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between; /* Creates the gap between label and value */
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 18px;
+}
+
+.label {
+  color: #94a3b8;
+  font-size: 1.1rem;
+  font-weight: 300;
+  flex-shrink: 0; /* Prevents label from squashing */
+}
+
+.value {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: right;
+  /* FIX FOR MOVIE TITLE WRAPPING */
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 20px; /* Minimum guaranteed gap */
+}
+
+.price-section {
+  background: rgba(255, 77, 0, 0.05);
+  padding: 35px 45px;
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  border: 1px solid rgba(255, 77, 0, 0.2);
+  width: 85%;
+  margin-left: 50px;                   
+  box-sizing: border-box;
+}
+
+.price-label {
+  font-size: 1.3rem;
+  color: #cbd5e1;
+  flex: 1;                     
+  text-align: left;
+}
+
+.price-amount {
+  color: #ff4d00;
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  flex: 1;                       
+  text-align: right;             
+}
+
+.confirm-btn-container {
+  display: flex;
+  justify-content: center;
+}
+
+.confirm-btn {
+  /* ... keep your background colors ... */
+  padding: 15px 40px;      /* Standardize padding */
+  min-width: 220px;        /* Force same width */
+  height: 55px;            /* Force same height */
+  display: flex;           /* Flexbox helps center text */
+  align-items: center;
+  justify-content: center;
+  margin: 0;               /* Remove random margins */
+  border: 2px solid #ff4d00;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  /* ... keep hover effects ... */
+}
+
+.confirm-btn:hover {
+  background: #ff4d00;
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(255, 77, 0, 0.4);
+}
+
+/* --- SUCCESS PAGE SPECIFIC STYLES --- */
+
+.success-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.success-card {
+  padding: 80px 60px !important;
+  min-height: 550px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+}
+
+/* Glowing Success Icon */
+.check-icon {
+  width: 100px;
+  height: 100px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 3px solid #00ff88;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #00ff88;
+  margin-bottom: 20px;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(0, 255, 136, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+}
+
+.success-card h1 {
+  color: #ffb700; /* Gold for "Success" header */
+  font-size: 2.8rem;
+  letter-spacing: 6px;
+  margin: 0;
+}
+
+.ref-text {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px 30px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.ref-text span {
+  color: #ffffff;
+  font-weight: 700;
+  margin-left: 10px;
+  letter-spacing: 2px;
+}
+
+/* Matching the Glassy Button from the Confirmation Page */
+.history-btn {
+  /* ... keep your background colors ... */
+  padding: 15px 40px;      /* MATCH the padding above */
+  min-width: 220px;        /* MATCH the width above */
+  height: 55px;            /* MATCH the height above */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3); /* Make border thickness match (2px) */
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  /* ... keep hover effects ... */
+}
+
+.history-btn:hover {
+  background: #ffffff;
+  color: #0a0a1a;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
+}
+
+/* --- HISTORY PAGE: PREMIUM DASHBOARD --- */
+
+/* Main Wrapper to handle the Horizontal Layout */
+.history-page-container {
+  padding: 40px;
+  background-color: #0b0f19; 
+  min-height: 100vh;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  gap: 30px;
+}
+
+.history-page-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;      
+  justify-content: flex-start;
+  gap: 30px;
+  width: 100%;
+  max-width: 1600px;
+}
+
+/* The Main Heading Box - LEFT SIDEBAR (Orange Outlined Box) */
+.history-title-box {
+  flex: 0 0 320px; /* Fixed width */
+  background-color: #111827; /* Dark Gray Background */
+  padding: 40px 30px;
+  border-radius: 20px;
+  border: 1px solid #ff3d00; /* THE ORANGE GLOW BORDER */
+  box-shadow: 0 0 20px rgba(255, 61, 0, 0.15);
+  text-align: center;
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.history-title {
+  color: #ff3d00; /* Orange Text */
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* The Grid for the Cards - RIGHT SIDE */
+.history-list {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  align-content: start;      
+  grid-auto-rows: min-content;
+}
+
+/* Individual Ticket Card */
+.history-item {
+  background-color: #111827; /* Dark Card */
+  border-radius: 16px;
+  padding: 25px;
+  border: 1px solid #1f2937;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: 0.2s;
+}
+
+.history-item:hover {
+  border-color: #374151;
+}
+
+/* Text sizes inside the cards */
+.item-info h3 {
+  color: #fbbf24; /* Yellow/Orange */
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.item-info p {
+  color: #9ca3af; /* Gray Label */
+  font-size: 0.95rem;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-info p span {
+  color: #ffffff;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* WHITE BUTTONS (Like in Payment History) */
+.confirm-btn {
+  background-color: white;
+  color: black;
+  border: none;
+  padding: 12px 0;
+  border-radius: 50px; /* Fully rounded */
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.2s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.confirm-btn:hover {
+  transform: scale(1.02);
+  background-color: #f3f4f6;
+}
+
+/* CLEAR HISTORY BUTTON (Red Border) */
+.history-btn {
+  background: transparent;
+  border: 1px solid #ff3333;
+  color: #ff3333;
+  padding: 12px 0;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  transition: 0.2s;
+}
+
+
+/* Button Styling - RED OUTLINE BUTTON (Matches Payment History) */
+.cancel-btn-outline {
+  background: transparent;
+  border: 1px solid #ef4444; /* Red Border */
+  color: #ef4444;            /* Red Text */
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  align-self: flex-end; /* Pushes to right */
+  transition: 0.2s;
+  margin-top: 15px;
+}
+
+.cancel-btn-outline:hover {
+  background-color: #ef4444;
+  color: white;
+}

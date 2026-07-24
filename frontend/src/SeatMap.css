@@ -1,0 +1,414 @@
+/* SeatMap.css - Scope Cinemas Professional Theme */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body {
+  background-color: #0e1022; /* Deep Navy Background */
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+}
+
+.cinema-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+/* Header & Price Bar */
+.header-info {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 20px;
+  width: 100%;
+  max-width: 800px;
+}
+.header-info h2 { margin: 0; font-size: 1.5rem; letter-spacing: 2px; }
+.header-info p { color: #888; font-size: 0.9rem; margin-top: 5px; }
+
+/* The Curved Screen */
+.screen-container {
+  perspective: 800px;
+  margin-bottom: 60px;
+  display: flex;
+  justify-content: center;
+}
+.screen {
+  background: linear-gradient(to bottom, #fff, transparent);
+  height: 40px;
+  width: 500px;
+  transform: rotateX(-20deg) scale(0.9);
+  box-shadow: 0 40px 60px -10px rgba(255, 255, 255, 0.15);
+  border-radius: 50% 50% 0 0;
+  opacity: 0.4;
+  position: relative;
+}
+/* "SCREEN" Text */
+.screen::after {
+  content: "SCREEN";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px; letter-spacing: 5px; color: #000;
+  font-weight: bold;
+}
+
+/* The Seat Grid */
+.seat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seat-row {
+  display: flex;
+  gap: 8px; /* Standard gap between seats */
+  justify-content: center;
+  align-items: center;
+}
+
+.row-label {
+  width: 30px;
+  text-align: center;
+  font-weight: bold;
+  color: #555;
+  font-size: 0.8rem;
+}
+
+/* The Seat Box */
+.seat {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #4a4d66; /* Subtle Blue Outline */
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: transparent; /* Transparent center like the photo */
+  color: #aaa;
+}
+
+/* Creating the Aisles (Gaps) */
+.aisle-gap {
+  margin-right: 40px; /* Big gap to create walking path */
+}
+
+/* States */
+.seat.AVAILABLE:hover {
+  border-color: #fff;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+.seat.LOCKED {
+  background-color: #fbbf24; /* Gold */
+  border-color: #fbbf24;
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+.seat.BOOKED {
+  background-color: #ef4444; /* Red */
+  border-color: #ef4444;
+  color: #fff;
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Bottom Legend */
+.legend {
+  margin-top: 50px;
+  display: flex;
+  gap: 30px;
+  background: #1a1d33;
+  padding: 15px 30px;
+  border-radius: 50px;
+}
+.legend-item { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #ccc; }
+.legend-box { width: 20px; height: 20px; border-radius: 4px; border: 1px solid #555; }
+
+/* Seat Legend - Above the Grid */
+.seat-legend {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+  padding: 15px 30px;
+  background: rgba(26, 29, 51, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seat-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.seat-legend .legend-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid #4a4d66;
+}
+
+.seat-legend .legend-box.selected {
+  background-color: #ff3d00;
+  border-color: #ff3d00;
+}
+
+.seat-legend .legend-box.available {
+  background-color: transparent;
+  border-color: #4a4d66;
+}
+
+.seat-legend .legend-box.booked {
+  background-color: #ef4444;
+  border-color: #ef4444;
+}
+
+.seat-legend .legend-box.unavailable {
+  background-color: #0e1022;
+  border-color: #4a4d66;
+}
+
+/* The Bottom Summary Bar */
+.summary-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1f2238;
+    border-top: 1px solid #333;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    align-items: center;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+    z-index: 100;
+}
+.btn-pay {
+    padding: 10px 30px;
+    background: linear-gradient(45deg, #eab308, #ca8a04);
+    border: none;
+    color: black;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-pay:hover { filter: brightness(1.1); }
+/* -- COPY THIS INTO SeatMap.css -- */
+
+/* Makes the seat Yellow when clicked */
+.seat.selected {
+    background-color: #facc15 !important; /* Yellow */
+    color: black;
+    border: 2px solid orange;
+}
+
+/* Makes booked seats Red */
+.seat.booked {
+    background-color: #ef4444 !important; /* Red */
+    cursor: not-allowed;
+    pointer-events: none; /* Prevents clicking */
+}
+
+/* Makes available seats White */
+.seat.available {
+    background-color: white;
+    cursor: pointer;
+}
+
+/* The footer bar that appears when you select seats */
+.summary-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #222;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 3px solid #facc15;
+}
+/* Add this class for the invisible gaps */
+.seat.gap {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: default;
+    pointer-events: none; /* Cannot click a gap */
+    visibility: hidden; /* Makes it invisible but keeps the space */
+}
+/* --- Main Container --- */
+.cinema-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #0f172a; /* Deep dark blue background */
+    min-height: 100vh;
+    padding: 20px;
+    color: #e2e8f0; /* Light text color */
+}
+
+.header-info h2 {
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+/* --- The Screen --- */
+.screen-container {
+    perspective: 1000px;
+    margin-bottom: 40px;
+}
+
+.screen {
+    background-color: #1e293b; /* Darker screen */
+    height: 60px;
+    width: 300px;
+    margin: 0 auto;
+    transform: rotateX(-45deg);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.1);
+    text-align: center;
+    line-height: 60px;
+    font-size: 14px;
+    color: #94a3b8; /* Dim text for screen */
+    letter-spacing: 4px;
+}
+
+/* --- Seat Grid --- */
+.seat-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 80px; /* Space for footer */
+}
+
+.seat-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.row-label {
+    font-weight: bold;
+    margin-right: 15px;
+    color: #64748b; /* Dim color for row letters */
+    width: 20px;
+}
+
+/* Common Seat Style */
+.seat {
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+/* --- COLOR CHANGES START HERE --- */
+
+/* 1. Available Seat (Dark Blue like the image) */
+.seat.available {
+    background-color: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    cursor: pointer;
+}
+.seat.available:hover {
+    background-color: #475569; 
+}
+
+/* 2. Selected Seat (YOUR COLOR) */
+.seat.selected {
+    background-color: #ff3d00 !important; /* The vivid orange-red you asked for */
+    color: white;
+    border: 2px solid #cc3100; /* Slightly darker border for 3D effect */
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(255, 61, 0, 0.4); /* Glow effect */
+}
+
+/* 3. Booked Seat (Dark Red) */
+.seat.booked {
+    background-color: #7f1d1d !important;
+    color: #fca5a5;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 4. Invisible Gap */
+.seat.gap {
+    background-color: transparent !important;
+    border: none !important;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* --- Footer Summary Bar --- */
+.summary-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1e293b; 
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #334155;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Button Styles --- */
+.button-group {
+    display: flex;
+    gap: 15px;
+}
+
+/* Pay Button (YOUR COLOR) */
+.btn-pay {
+    padding: 12px 25px;
+    background: #ff3d00; /* The vivid orange-red */
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: background 0.2s;
+}
+.btn-pay:hover {
+    background: #e63700; /* Slightly darker on hover */
+}
+
+.btn-cancel {
+    padding: 12px 25px;
+    background: transparent;
+    border: 2px solid #ef4444; /* Red outline */
+    font-weight: bold;
+    cursor: pointer;
+    color: #ef4444; /* Red text */
+    border-radius: 6px;
+    font-size: 1em;
+    transition: all 0.2s;
+}
+.btn-cancel:hover {
+    background: #ef4444;
+    color: white;
+}

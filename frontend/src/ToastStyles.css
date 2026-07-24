@@ -1,0 +1,95 @@
+/* src/ToastStyles.css */
+
+/* 1. Remove the default white/black background and apply Glassmorphism */
+.Toastify__toast {
+  background: rgba(18, 22, 35, 0.95) !important; /* Dark Blue-Black */
+  backdrop-filter: blur(12px) !important;        /* Glass Blur */
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 15px 20px !important;
+  min-height: 80px !important; /* Make it slightly taller */
+  font-family: 'Segoe UI', sans-serif !important;
+  overflow: visible !important; /* Let glow effects spill out */
+  margin-bottom: 16px !important;
+}
+
+/* 2. Style the Message Text */
+.Toastify__toast-body {
+  color: #e0e6ed !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  margin-left: 10px !important;
+}
+
+/* 3. SUCCESS Notification (Green Accent) */
+.Toastify__toast--success {
+  border-left: 6px solid #00e676 !important;
+}
+.Toastify__toast--success::before {
+  /* Glowing effect behind the toast */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 5px;
+  background: #00e676;
+  box-shadow: 0 0 15px #00e676;
+  border-radius: 0 4px 4px 0;
+}
+/* Icon Color */
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #00e676 !important;
+}
+
+/* 4. ERROR Notification (Red Accent) */
+.Toastify__toast--error {
+  border-left: 6px solid #ff3d00 !important;
+}
+.Toastify__toast--error::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 5px;
+  background: #ff3d00;
+  box-shadow: 0 0 15px #ff3d00;
+  border-radius: 0 4px 4px 0;
+}
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #ff3d00 !important;
+}
+
+/* 5. INFO Notification (Blue Accent) */
+.Toastify__toast--info {
+  border-left: 6px solid #2979ff !important;
+}
+.Toastify__toast--info .Toastify__toast-icon svg {
+  fill: #2979ff !important;
+}
+
+/* 6. Custom Progress Bar */
+.Toastify__progress-bar {
+  height: 3px !important;
+  opacity: 0.8 !important;
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+}
+.Toastify__progress-bar--success {
+  background: linear-gradient(90deg, #00e676, #66ffa6) !important;
+}
+.Toastify__progress-bar--error {
+  background: linear-gradient(90deg, #ff3d00, #ff9e80) !important;
+}
+
+/* 7. Close Button */
+.Toastify__close-button {
+  color: rgba(255, 255, 255, 0.6) !important;
+  opacity: 1 !important;
+}
+.Toastify__close-button:hover {
+  color: #fff !important;
+}

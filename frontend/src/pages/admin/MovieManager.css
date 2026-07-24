@@ -1,0 +1,171 @@
+.moviemanager-page {  
+  background-color: #141436;
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  padding: 40px 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.moviemanager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.moviemanager-title {
+  font-size: 2.6rem;
+  color: #ff3d00;
+  margin: 0;
+}
+
+.moviemanager-add-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #ff3d00;
+  color: #ffffff;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.moviemanager-add-btn:hover {
+  background-color: #6e1b02;
+}
+
+.moviemanager-filters {
+  display: flex;
+  gap: 35px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.moviemanager-filters select {
+  background-color: #1c1c4d;
+  color: #ffffff;
+  border: 1px solid #2c2c54;
+  padding: 10px 14px;
+  border-radius: 8px;
+  min-width: 250px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.moviemanager-filters select:hover,
+.moviemanager-filters select:focus {
+  border-color: #ff3d00;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 61, 0, 0.25);
+}
+
+.moviemanager-filters option {
+  background-color: #141436;
+  color: #ffffff;
+}
+
+.moviemanager-table-wrapper {
+  overflow-x: auto;
+}
+
+.moviemanager-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #0f0f28;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.moviemanager-table th {
+  background-color: #1e1b4b;
+  color: #ff3d00;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.moviemanager-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #ffffff;
+  border-bottom: 1px solid #2c2c54;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.moviemanager-table tbody tr:hover {
+  background-color: #1a193d;
+}
+
+.moviemanager-description-cell {
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #e0e0e0;
+}
+
+.moviemanager-table a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.moviemanager-table a:hover {
+  text-decoration: underline;
+}
+
+.moviemanager-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.moviemanager-edit,
+.moviemanager-delete {
+  font-size: 25px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.moviemanager-edit {
+  color: #ffffff;
+}
+
+.moviemanager-delete {
+  color: #ff3d00;
+  opacity: 0.8;
+}
+
+.moviemanager-edit:hover,
+.moviemanager-delete:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.moviemanager-page__loading {
+  font-size: 16px;
+  opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+  .moviemanager-table th,
+  .moviemanager-table td {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+
+  .moviemanager-description-cell {
+    max-width: 180px;
+  }
+
+  .moviemanager-edit,
+  .moviemanager-delete {
+    font-size: 20px;
+  }
+}

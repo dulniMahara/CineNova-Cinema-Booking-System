@@ -1,0 +1,341 @@
+/* --- MAIN PAGE CONTAINER --- */
+.hallmanager-page {
+  background-color: #141436; /* Deep Blue Background */
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  padding: 40px 24px;
+  width: 100%;
+  min-height: 85vh; /* Ensure full height */
+  box-sizing: border-box;
+}
+
+/* --- HEADER SECTION (Title Left, Button Right) --- */
+.hallmanager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.hallmanager-title {
+  font-size: 2.6rem;
+  color: #ff3d00; /* Orange-Red Title */
+  margin: 0;
+  font-weight: bold;
+}
+
+/* --- TOP RIGHT BUTTON (Matches Movie Manager) --- */
+.hallmanager-add-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: #ff3d00;
+  color: #ffffff;
+  transition: background 0.3s ease, transform 0.2s ease;
+  height: 45px;
+  font-size: 1rem;
+}
+
+.hallmanager-add-btn:hover {
+  background-color: #d63300; /* Slightly darker orange */
+  transform: translateY(-2px);
+}
+
+/* --- ADD HALL FORM SECTION (Conditionally Rendered) --- */
+.hallmanager-controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05); /* Slight tint for form area */
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #2c2c54;
+}
+
+.hallmanager-controls h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #ddd;
+    margin-right: 15px;
+}
+
+/* --- INPUTS --- */
+.hallmanager-input {
+  background-color: #1c1c4d;
+  color: #ffffff;
+  border: 1px solid #2c2c54;
+  padding: 10px 14px;
+  border-radius: 8px;
+  min-width: 200px;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+}
+
+.hallmanager-input.small {
+    min-width: 120px;
+    width: 120px;
+}
+
+.hallmanager-input:focus {
+  border-color: #ff3d00;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 61, 0, 0.25);
+}
+
+/* --- SAVE BUTTON (Inside Form) --- */
+.hallmanager-save-btn {
+    padding: 10px 24px;
+    background-color: #28a745; /* Green for Save */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 40px; 
+    transition: background 0.2s;
+}
+
+.hallmanager-save-btn:hover {
+    background-color: #218838;
+}
+
+/* --- TABLE STYLING --- */
+.hallmanager-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #2c2c54;
+}
+
+.hallmanager-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #0f0f28; /* Darker Table BG */
+  overflow: hidden;
+}
+
+.hallmanager-table th {
+  background-color: #1e1b4b; /* Header BG */
+  color: #ff3d00; /* Header Text Orange */
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.hallmanager-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #ffffff;
+  border-bottom: 1px solid #2c2c54;
+  vertical-align: middle;
+}
+
+.hallmanager-table tbody tr:hover {
+  background-color: #1a193d; /* Hover Row Color */
+}
+
+/* --- ICONS & ACTIONS --- */
+.hallmanager-id {
+    font-family: monospace;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+/* Edit Button Styles */
+.hallmanager-edit {
+  font-size: 22px;
+  color: #ffffff; /* White icon */
+  opacity: 0.8;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  background: none;
+  border: none;
+  margin-right: 15px; /* Spacing between Edit and Delete */
+}
+.hallmanager-edit:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Delete Button Styles */
+.hallmanager-delete {
+  font-size: 22px;
+  color: #ff3d00;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  background: none;
+  border: none;
+}
+
+.hallmanager-delete:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.text-right { text-align: right; }
+
+/* --- ANIMATION --- */
+.slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- FORM HEADER & INPUTS --- */
+.hall-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.capacity-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.hall-inputs-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+/* --- VISUAL GRID CONTAINER --- */
+.seat-grid-container {
+    width: 100%;
+    background-color: #0b0f19;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+    border: 1px solid #333;
+}
+
+.instruction-text {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+/* --- THE ACTUAL GRID --- */
+.visual-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.grid-cell {
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #333;
+}
+
+/* --- SEAT STATE (Active) --- */
+.grid-cell.seat {
+    background-color: #3d4a6b; /* Blueish Seat */
+    border-color: #556891;
+}
+
+.grid-cell.seat:hover {
+    background-color: #28a745; /* Green on Hover */
+}
+
+.seat-icon {
+    font-size: 1.2rem;
+    filter: grayscale(100%); /* Make emoji look flatter */
+}
+
+/* --- AISLE STATE (Empty) --- */
+.grid-cell.aisle {
+    background-color: transparent;
+    border: 1px dashed #444; /* Dashed line to show it's empty space */
+}
+
+.grid-cell.aisle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* --- Keep your existing CSS, just ADD/UPDATE this part --- */
+
+/* ... (Your existing header/input styles) ... */
+
+/* --- TABLE ACTIONS --- */
+.text-right { 
+    text-align: right; 
+    white-space: nowrap; /* Keeps buttons on one line */
+}
+
+/* Edit Button Style */
+.hallmanager-edit {
+  font-size: 22px;
+  color: #ffffff; /* White icon */
+  opacity: 0.8;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  background: none;
+  border: none;
+  margin-right: 15px; /* Spacing between Edit and Delete */
+  display: inline-flex;
+  align-items: center;
+}
+
+.hallmanager-edit:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Delete Button Style */
+.hallmanager-delete {
+  font-size: 22px;
+  color: #ff3d00;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  background: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hallmanager-delete:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
