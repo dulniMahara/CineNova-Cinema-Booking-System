@@ -98,8 +98,15 @@ const ShowtimeSelection = () => {
   }, {});
   // -----------------------------
 
-  const handleTimeClick = (showtimeId) => {
-    navigate(`/booking/${showtimeId}`);
+  const handleTimeClick = (st) => {
+    const showtimeObj = typeof st === 'object' ? st : showtimes.find(item => item._id === st);
+    const targetStId = showtimeObj?._id || st;
+    navigate(`/booking/${targetStId}`, {
+      state: {
+        movie: movie,
+        showtime: showtimeObj
+      }
+    });
   };
 
   return (
@@ -197,7 +204,7 @@ const ShowtimeSelection = () => {
                               <button
                                 key={st._id}
                                 className={`scope-time-btn${isPast ? ' locked' : ''}`}
-                                onClick={() => handleTimeClick(st._id)}
+                                onClick={() => handleTimeClick(st)}
                                 disabled={isPast}
                               >
                                 <span className="time-text">{st.startTime}</span>
