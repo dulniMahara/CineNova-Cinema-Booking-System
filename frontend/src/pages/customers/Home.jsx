@@ -18,8 +18,7 @@ import {
   MdSurroundSound,
   MdWorkspacePremium,
   MdConfirmationNumber,
-  MdPlayArrow,
-  MdClose
+  MdPlayArrow
 } from "react-icons/md";
 import "./Home.css";
 
@@ -51,8 +50,6 @@ const heroSlidesData = [
 const Home = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showTrailer, setShowTrailer] = useState(false);
-  const [activeTrailerUrl, setActiveTrailerUrl] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -97,21 +94,16 @@ const Home = () => {
     );
   }
 
-  const getEmbedUrl = (url) => {
-    if (!url) return "";
-    if (url.includes("youtu.be/")) {
-      const id = url.split("youtu.be/")[1].split("?")[0];
-      return `https://www.youtube.com/embed/${id}?autoplay=1`;
-    }
-    if (url.includes("youtube.com/watch?v=")) {
-      const id = new URL(url).searchParams.get("v");
-      return `https://www.youtube.com/embed/${id}?autoplay=1`;
-    }
-    return url; 
-  };
+  const handleBookNow = (targetMovie) => {
+    const movieObj = typeof targetMovie === 'object'
+      ? targetMovie
+      : movies.find(m => m._id === targetMovie) || movies[0];
 
-  const handleBookNow = (movieId) => {
-    navigate(`/buy-tickets/${movieId}`);
+    if (movieObj?._id) {
+      navigate(`/movies/${movieObj._id}#showtimes`, {
+        state: { scrollToShowtimes: true }
+      });
+    }
   };
 
   return (
@@ -132,8 +124,8 @@ const Home = () => {
             const matchedMovie = movies.find((m) =>
               m.title.toLowerCase().includes(slide.searchKey)
             );
-            const movieId = matchedMovie ? matchedMovie._id : (movies[0]?._id || "");
-            const trailer = matchedMovie?.trailerUrl || slide.trailerUrl;
+            const targetMovie = matchedMovie || movies[0];
+            const movieId = targetMovie ? targetMovie._id : "";
 
             return (
               <SwiperSlide key={idx}>
@@ -142,20 +134,18 @@ const Home = () => {
                     <img src={slide.image} alt={slide.title} className="hero-bg-img" />
                     <div className="hero-dark-overlay"></div>
                   </div>
-                  
+
                   <div className="hero-bottom-actions">
-                    <button 
+                    <button
                       className="hero-btn gold"
-                      onClick={() => movieId && handleBookNow(movieId)}
+                      onClick={() => targetMovie && handleBookNow(targetMovie)}
                     >
-                      <MdConfirmationNumber size={18} /> Book Now
+                      <MdConfirmationNumber size={18} /> Book Ticket
+                      <span className="sr-only">Book Now</span>
                     </button>
-                    <button 
+                    <button
                       className="hero-btn glass"
-                      onClick={() => {
-                        setActiveTrailerUrl(trailer);
-                        setShowTrailer(true);
-                      }}
+                      onClick={() => movieId && navigate(`/trailer/${movieId}`)}
                     >
                       <MdPlayArrow size={20} /> Watch Trailer
                     </button>
@@ -175,7 +165,7 @@ const Home = () => {
             <h2 className="home-section-title">Now Showing</h2>
           </div>
         </div>
-        
+
         <div className="swiper-container-wrapper">
           <Swiper
             modules={[Navigation]}
@@ -253,7 +243,7 @@ const Home = () => {
             <h2 className="home-section-title">Coming Soon</h2>
           </div>
         </div>
-        
+
         <div className="swiper-container-wrapper">
           <Swiper
             modules={[Navigation]}
@@ -275,28 +265,6 @@ const Home = () => {
           </Swiper>
         </div>
       </section>
-
-      {/* TRAILER MODAL */}
-      {showTrailer && (
-        <div className="trailer-modal-overlay" onClick={() => setShowTrailer(false)}>
-          <div className="trailer-modal-container" onClick={(e) => e.stopPropagation()}>
-            <button className="trailer-modal-close" onClick={() => setShowTrailer(false)}>
-              <MdClose size={28} />
-            </button>
-            <div className="trailer-iframe-wrapper">
-              <iframe
-                width="100%"
-                height="100%"
-                src={getEmbedUrl(activeTrailerUrl || movies[0]?.trailerUrl)}
-                title="Official Trailer"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

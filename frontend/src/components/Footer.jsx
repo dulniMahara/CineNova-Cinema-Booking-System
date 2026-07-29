@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
-import { MdMovie } from "react-icons/md";
 import "./Footer.css";
 
 const Footer = () => {
@@ -49,7 +48,7 @@ const Footer = () => {
 
         <div className="footer-contact">
           <h4>Contact Us</h4>
-          <p><FaMapMarkerAlt className="contact-icon" /> 100 Premium Blvd, Cinema City</p>
+          <p><FaMapMarkerAlt className="contact-icon" /> 100 Premium Blvd, Cinema City<br />Colombo, Sri Lanka</p>
           <p><FaPhoneAlt className="contact-icon" /> +1 (555) 123-4567</p>
           <p><FaEnvelope className="contact-icon" /> support@cinenova.com</p>
         </div>

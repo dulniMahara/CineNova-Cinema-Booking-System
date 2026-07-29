@@ -4,6 +4,7 @@ import PageLayout from "./components/PageLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MovieList from "./pages/customers/MovieList";
 import MovieDetails from "./pages/customers/MovieDetails";
+import TrailerPage from "./pages/customers/TrailerPage";
 import Home from "./pages/customers/Home";
 import AboutUs from "./pages/customers/AboutUs";
 import MovieManager from "./pages/admin/MovieManager";
@@ -35,6 +36,7 @@ import PaymentHistory from './pages/PaymentHistory';
 import Notifications from "./pages/customers/Notifications";
 import EmailVerification from "./pages/EmailVerification";
 import ResendVerification from "./pages/ResendVerification";
+import ScrollToTop from "./components/ScrollToTop";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -46,6 +48,7 @@ function App() {
   return (
     <SearchProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ScrollToTop />
         
         {/* --- Notification Popup Container --- */}
         <ToastContainer 
@@ -93,6 +96,14 @@ function App() {
             element={
               <PageLayout>
                 <MovieDetails />
+              </PageLayout>
+            }
+          />
+          <Route
+            path="/trailer/:id"
+            element={
+              <PageLayout>
+                <TrailerPage />
               </PageLayout>
             }
           />
@@ -155,7 +166,9 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/confirm-password" element={<ConfirmPassword />} />
           <Route path="/seats" element={<SeatSelection />} />
+          <Route path="/booking/:id" element={<SeatSelection />} />
           <Route path="/booking/:showtimeId" element={<SeatSelection />} />
+          <Route path="/buy-tickets/:id" element={<CreateBookingPage />} />
           <Route path="/create-booking" element={<CreateBookingPage />} />
           <Route path="/booking-success" element={<BookingSuccess />} />
           <Route path="/my-bookings" element={<ProtectedRoute><MyBookingPage /></ProtectedRoute>} />
