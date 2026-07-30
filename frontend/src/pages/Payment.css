@@ -1,122 +1,242 @@
+/* CineNova Payment Page - Luxury 2026 Theme */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 .payment-container {
-    min-height: 100vh;
-    background-color: #0b0f19;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  background-color: #0B0B0B;
+  background-image:
+    radial-gradient(circle at 30% 20%, rgba(11, 61, 46, 0.35) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(212, 175, 55, 0.15) 0%, transparent 45%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  box-sizing: border-box;
+  animation: pageFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-container.loading-state {
+  text-align: center;
+}
+
+.payment-loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #FFFFFF;
+}
+
+.payment-header-controls {
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 20px;
 }
 
 .payment-card {
-    background-color: #111827;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    max-width: 450px;
-    border: 1px solid #374151;
-    color: white;
+  background: rgba(18, 18, 18, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 36px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.1);
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  color: #FFFFFF;
+  box-sizing: border-box;
 }
 
-.payment-header {
-    text-align: center;
-    margin-bottom: 2rem;
+.payment-card-header {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.payment-header h2 {
-    color: #ff3d00; 
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.payment-card-header h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  background: linear-gradient(135deg, #FFFFFF 30%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.movie-for-text {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.movie-for-text span {
+  color: #D4AF37;
+  font-weight: 700;
 }
 
 .amount-box {
-    background-color: #1f2937;
-    padding: 1rem;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    border: 1px solid #4b5563;
+  background: rgba(11, 61, 46, 0.4);
+  border: 1px solid rgba(80, 227, 194, 0.3);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .amount-box .label {
-    color: #9ca3af;
-    font-size: 0.9rem;
-    display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
 }
 
 .amount-box .value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ffffff;
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #D4AF37 0%, #F5D77F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.form-group {
-    margin-bottom: 1rem;
+.payment-seats-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
-.form-group label {
-    display: block;
-    color: #9ca3af;
-    font-size: 0.8rem;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.seat-chip.gold-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid #D4AF37;
+  color: #D4AF37;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+}
+
+.security-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: #50E3C2;
+  margin-bottom: 24px;
+}
+
+.payment-form .form-group {
+  margin-bottom: 18px;
+}
+
+.payment-form label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+
+.label-icon {
+  color: #D4AF37;
 }
 
 .form-input {
-    width: 100%;
-    background-color: #1f2937;
-    border: 1px solid #374151;
-    color: white;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 1rem;
-    outline: none;
-    box-sizing: border-box;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
 
 .form-input:focus {
-    border-color: #eab308;
+  border-color: #D4AF37;
+  background: rgba(11, 61, 46, 0.3);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .row {
-    display: flex;
-    gap: 15px;
+  display: flex;
+  gap: 16px;
 }
 
 .col {
-    flex: 1;
+  flex: 1;
 }
 
 .pay-btn {
-    width: 100%;
-    background: linear-gradient(to right, #ff3d00);
-    color: black;
-    font-weight: bold;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 1rem;
-    font-size: 1rem;
-    transition: transform 0.2s;
+  width: 100%;
+  background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
+  color: #0B0B0B;
+  font-weight: 800;
+  padding: 16px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 1rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35);
 }
 
-.pay-btn:hover {
-    transform: scale(1.02);
-    background: #ff3d00;
+.pay-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #E5C158 0%, #C4921C 100%);
+  box-shadow: 0 8px 28px rgba(212, 175, 55, 0.6);
+  transform: translateY(-2px);
+}
+
+.pay-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .error-msg {
-    background: #ef4444;
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
-    text-align: center;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #FCA5A5;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.85rem;
 }
