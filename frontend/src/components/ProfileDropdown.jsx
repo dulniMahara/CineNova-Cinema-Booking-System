@@ -93,7 +93,7 @@ const ProfileDropdown = ({ onLogout }) => {
               onClick={() => handleItemClick('/my-payments')}
             >
               <FiCreditCard className="menu-icon" />
-              <span>Payment History</span>
+              <span>My Payments</span>
             </button>
           </div>
 

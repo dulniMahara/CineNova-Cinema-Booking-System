@@ -166,9 +166,10 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/confirm-password" element={<ConfirmPassword />} />
           <Route path="/booking/:showtimeId" element={<SeatSelection />} />
-          <Route path="/buy-tickets/:id" element={<CreateBookingPage />} />
-          <Route path="/create-booking" element={<CreateBookingPage />} />
+          <Route path="/buy-tickets/:showtimeId" element={<CreateBookingPage />} />
           <Route path="/booking-success" element={<BookingSuccess />} />
+          <Route path="/booking-success/:bookingId" element={<BookingSuccess />} />
+          <Route path="/ticket/:bookingId" element={<BookingSuccess />} />
           <Route path="/my-bookings" element={<ProtectedRoute><MyBookingPage /></ProtectedRoute>} />
 
           <Route
@@ -233,7 +234,7 @@ function App() {
             }
           />
           <Route
-            path="/buy-tickets/:movieId"
+            path="/showtimes/:movieId"
             element={
               <PageLayout>
                 <ShowtimeSelection />
