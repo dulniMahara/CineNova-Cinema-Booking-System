@@ -480,43 +480,86 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 14px 28px;
+  gap: 6px;
+  padding: 14px 22px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(18, 18, 18, 0.7);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   color: #FFFFFF;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  min-width: 130px;
+  min-width: 140px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.showtime-btn:hover {
-  border-color: #0B3D2E;
-  background: rgba(11, 61, 46, 0.5);
-  box-shadow: 0 0 20px rgba(11, 61, 46, 0.7);
+.showtime-btn:hover:not(:disabled) {
+  border-color: #D4AF37;
+  background: rgba(11, 61, 46, 0.6);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
   transform: translateY(-3px);
 }
 
-.showtime-btn.selected {
-  background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
-  border-color: #D4AF37;
-  color: #0B0B0B;
-  box-shadow: 0 0 22px rgba(212, 175, 55, 0.45);
-  transform: scale(1.04);
+.showtime-btn:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
 }
 
-.showtime-btn .time-text {
+.showtime-btn.selected {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(11, 61, 46, 0.8) 100%);
+  border: 2px solid #D4AF37;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.55);
+  transform: translateY(-2px);
+}
+
+.showtime-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.showtime-btn .btn-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #D4AF37;
   font-size: 1.05rem;
   font-weight: 800;
 }
 
-.showtime-btn .type-text {
-  font-size: 0.75rem;
+.showtime-btn .time-icon {
+  font-size: 0.95rem;
+  color: #D4AF37;
+}
+
+.showtime-btn .btn-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+
+.showtime-btn .type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 600;
+}
+
+.showtime-btn .meta-icon {
+  font-size: 0.75rem;
   opacity: 0.8;
-  margin-top: 2px;
+}
+
+.showtime-btn .price-tag {
+  color: #50E3C2;
+  font-weight: 700;
 }
 
 /* Date Picker Bar Styling */

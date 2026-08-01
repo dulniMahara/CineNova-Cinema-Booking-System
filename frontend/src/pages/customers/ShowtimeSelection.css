@@ -163,65 +163,65 @@
 
 /* Updated Button Style (Outlined, Clean) */
 .scope-time-btn {
-    background: transparent;
-    border: 1px solid #444;
-    border-radius: 6px;
-    padding: 10px 25px;
-    min-width: 110px;
+    background: rgba(18, 18, 18, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 14px;
+    padding: 12px 24px;
+    min-width: 120px;
     color: white;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
-/* Orange theme for locked (past) showtimes */
+.scope-time-btn:hover:not(:disabled) {
+  border-color: #D4AF37;
+  background: rgba(11, 61, 46, 0.6);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+  transform: translateY(-3px);
+}
+
+.scope-time-btn:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
+}
+
 .scope-time-btn.locked,
 .scope-time-btn:disabled {
-  background: rgba(255, 61, 0, 0.13) !important; /* Light orange background */
- 
-  color: #fff !important; /* Keep text white */
-  opacity: 1;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  opacity: 0.45;
   cursor: not-allowed;
-  box-shadow: none;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .scope-time-btn.locked .time-text,
 .scope-time-btn:disabled .time-text {
-  color: #fff !important;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .scope-time-btn.locked .price-text,
 .scope-time-btn:disabled .price-text {
-  color: #fff !important;
-}
-
-
-.scope-time-btn:hover {
-  border-color: #00aeef; /* Hover Blue */
-  background-color: rgba(0, 174, 239, 0.1); /* Slight tint */
-  transform: translateY(-2px);
-}
-
-/* Remove hover effect for disabled/locked buttons */
-.scope-time-btn.locked:hover,
-.scope-time-btn:disabled:hover {
-  border:1px solid #444 ;
-  background: rgba(255, 61, 0, 0.13) !important;
-  transform: none !important;
-  cursor: not-allowed;
+  color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .scope-time-btn .time-text {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #D4AF37;
 }
 
 .scope-time-btn .price-text {
-    font-size: 0.75rem;
-    color: #aaa;
+    font-size: 0.78rem;
+    color: #50E3C2;
+    font-weight: 700;
     margin-top: 2px;
 }
 

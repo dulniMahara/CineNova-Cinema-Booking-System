@@ -118,33 +118,26 @@ const MovieDetails = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showTrailer]);
 
+  const isValidObjectId = (value) =>
+    typeof value === "string" && /^[0-9a-fA-F]{24}$/.test(value);
+
   // Compute showtimes for currently selected date
   const getShowtimesForDate = (dateObj) => {
     const dateStr = dateObj.toDateString();
     const isoDateStr = dateObj.toISOString();
 
-    // Match backend showtimes if present
+    // Match backend showtimes only
     const matchingReal = realShowtimes.filter(st => new Date(st.date).toDateString() === dateStr);
-    if (matchingReal.length > 0) {
-      return matchingReal.map(st => ({
-        id: st._id,
-        _id: st._id,
-        time: st.startTime,
-        startTime: st.startTime,
-        type: st.hall?.name || st.type || "Standard 2D",
-        price: st.price || 2000,
-        date: st.date || isoDateStr
-      }));
-    }
-
-    // Default showtimes for selected date
-    return [
-      { id: `${dateStr}-s1`, time: "10:30 AM", startTime: "10:30 AM", type: "Standard 2D", price: 1800, date: isoDateStr },
-      { id: `${dateStr}-s2`, time: "01:45 PM", startTime: "01:45 PM", type: "IMAX 3D", price: 2500, date: isoDateStr },
-      { id: `${dateStr}-s3`, time: "05:15 PM", startTime: "05:15 PM", type: "VIP Atmos", price: 3000, date: isoDateStr },
-      { id: `${dateStr}-s4`, time: "08:30 PM", startTime: "08:30 PM", type: "IMAX 3D", price: 2500, date: isoDateStr },
-      { id: `${dateStr}-s5`, time: "11:00 PM", startTime: "11:00 PM", type: "Late Night 2D", price: 1800, date: isoDateStr }
-    ];
+    return matchingReal.map(st => ({
+      id: st._id,
+      _id: st._id,
+      time: st.startTime,
+      startTime: st.startTime,
+      type: st.hall?.name || st.type || "Standard 2D",
+      price: st.price || 2000,
+      date: st.date || isoDateStr,
+      rawShowtime: st
+    }));
   };
 
   const currentAvailableShowtimes = getShowtimesForDate(selectedDateObj);
@@ -160,16 +153,23 @@ const MovieDetails = () => {
 
   const handleBooking = (stObj) => {
     const chosenSt = stObj || activeShowtime || currentAvailableShowtimes[0];
-    const targetStId = chosenSt?.id || chosenSt?._id || movie._id;
-    const showtimePayload = {
+    const realId = chosenSt?._id || chosenSt?.id;
+
+    if (!realId || !isValidObjectId(realId)) {
+      alert("No valid showtime selected or scheduled for this date.");
+      return;
+    }
+
+    const showtimePayload = chosenSt.rawShowtime || {
       ...chosenSt,
+      _id: realId,
       startTime: chosenSt.time || chosenSt.startTime || "07:30 PM",
       date: chosenSt.date || selectedDateObj.toISOString(),
       type: chosenSt.type || "Standard 2D",
       price: chosenSt.price || 2000
     };
 
-    navigate(`/booking/${targetStId}`, {
+    navigate(`/booking/${realId}`, {
       state: {
         movie: movie,
         showtime: showtimePayload
@@ -366,23 +366,34 @@ const MovieDetails = () => {
 
         {/* Available Showtimes for Selected Date */}
         <div className="showtimes-container">
-          {currentAvailableShowtimes.map((st) => {
-            const isSelected = (selectedShowtimeId === st.id) || (!selectedShowtimeId && st === activeShowtime);
-            return (
-              <button
-                key={st.id}
-                className={`showtime-btn ${isSelected ? "selected" : ""}`}
-                onClick={() => {
-                  setSelectedShowtimeId(st.id);
-                  handleBooking(st);
-                }}
-              >
-                <span className="time-text">{st.time || st.startTime}</span>
-                <span className="type-text">{st.type}</span>
-                <span className="price-tag">Rs. {st.price}</span>
-              </button>
-            );
-          })}
+          {currentAvailableShowtimes.length === 0 ? (
+            <div className="no-showtimes-msg" style={{ padding: '20px', color: '#94a3b8' }}>
+              No showtimes scheduled for this date.
+            </div>
+          ) : (
+            currentAvailableShowtimes.map((st) => {
+              const isSelected = (selectedShowtimeId === st.id) || (!selectedShowtimeId && st === activeShowtime);
+              return (
+                <button
+                  key={st.id}
+                  className={`showtime-btn ${isSelected ? "selected" : ""}`}
+                  onClick={() => {
+                    setSelectedShowtimeId(st.id);
+                    handleBooking(st);
+                  }}
+                >
+                  <div className="btn-time-row">
+                    <FiClock className="time-icon" />
+                    <span className="time-text">{st.time || st.startTime}</span>
+                  </div>
+                  <div className="btn-meta-row">
+                    <span className="type-badge"><FiFilm className="meta-icon" /> {st.type}</span>
+                    <span className="price-tag">Rs. {st.price}</span>
+                  </div>
+                </button>
+              );
+            })
+          )}
         </div>
       </section>
 
