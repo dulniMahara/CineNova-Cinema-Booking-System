@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Seat = require('../models/Seat');
 const Hall = require('../models/Hall');
 const Showtime = require('../models/Showtime');
@@ -8,6 +9,9 @@ const Showtime = require('../models/Showtime');
 router.post('/generate', async (req, res) => {
     try {
         const { showtimeId } = req.body;
+        if (!showtimeId || !mongoose.Types.ObjectId.isValid(showtimeId)) {
+            return res.status(400).json({ success: false, message: "Invalid showtime ID" });
+        }
         const showtime = await Showtime.findById(showtimeId);
         if (!showtime) return res.status(404).json({ error: "Showtime not found" });
 
@@ -33,6 +37,9 @@ router.get('/:showtimeId', async (req, res) => {
 
     try {
         const { showtimeId } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(showtimeId)) {
+            return res.status(400).json({ success: false, message: "Invalid showtime ID" });
+        }
 
         let seats = await Seat.find({ showtimeId });
 

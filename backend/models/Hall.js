@@ -22,4 +22,4 @@ const hallSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('Hall', hallSchema);
+module.exports = mongoose.models.Hall || mongoose.model('Hall', hallSchema);

@@ -98,9 +98,15 @@ const ShowtimeSelection = () => {
   }, {});
   // -----------------------------
 
-  const handleTimeClick = (st) => {
+  const isValidObjectId = (value) =>
+    typeof value === "string" && /^[0-9a-fA-F]{24}$/.test(value);
 
-    console.log("🔥 NEW SHOWTIME FUNCTION RUNNING 🔥");
+  const handleTimeClick = (st) => {
+    if (!st || !st._id || !isValidObjectId(st._id)) {
+      alert("Selected showtime is invalid or unavailable.");
+      return;
+    }
+
     console.log("SHOWTIME CLICKED:", st);
 
     navigate(`/booking/${st._id}`, {

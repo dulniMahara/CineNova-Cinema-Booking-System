@@ -31,4 +31,4 @@ const showtimeSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Showtime', showtimeSchema);
+module.exports = mongoose.models.Showtime || mongoose.model('Showtime', showtimeSchema);

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Seat = require('../models/Seat');
 const Showtime = require('../models/Showtime');
 const Hall = require('../models/Hall');
@@ -5,6 +6,9 @@ const Hall = require('../models/Hall');
 exports.getSeatsByShowtime = async (req, res) => {
   try {
     const { showtimeId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(showtimeId)) {
+      return res.status(400).json({ success: false, message: "Invalid showtime ID" });
+    }
 
     // 1. Fetch Data
     const showtime = await Showtime.findById(showtimeId);

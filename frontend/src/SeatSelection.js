@@ -32,144 +32,68 @@ const CinemaChairIcon = ({ number, status, isSelected }) => {
   );
 };
 
-// Dynamic layout generator with customizable ticket price
-const generateDefaultSeats = (stId, seatPrice = 2000) => {
-  const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
-  const seatsPerRow = 8;
-  const list = [];
-  const unitPrice = seatPrice && typeof seatPrice === 'number' && seatPrice > 0 ? seatPrice : 2000;
-  rows.forEach(row => {
-    for (let i = 1; i <= seatsPerRow; i++) {
-      list.push({
-        _id: `seat-${row}-${i}`,
-        showtimeId: stId,
-        row: row,
-        number: i,
-        price: unitPrice,
-        status: 'available'
-      });
-    }
-  });
-  return list;
-};
+const isValidObjectId = (value) =>
+  typeof value === "string" && /^[0-9a-fA-F]{24}$/.test(value);
 
 const SeatSelection = () => {
-  const params = useParams();
+  const { showtimeId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-
-  
-
-  // Support both URL patterns: /seats/:showtimeId OR /booking/:id (movieId or showtimeId)
-  const targetId = params.showtimeId || params.id;
 
   const [seats, setSeats] = useState([]);
   const [selectedSeatIds, setSelectedSeatIds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [showtimeDetails, setShowtimeDetails] = useState(null);
-  const [resolvedShowtimeId, setResolvedShowtimeId] = useState(targetId);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
 
   // Extract optional initial details from location state
   const passedMovie = location.state?.movie;
   const passedShowtime = location.state?.showtime;
 
-  // 1. Resilient Seat & Showtime Metadata Fetching
+  // 1. Fetch real seats by showtimeId
   useEffect(() => {
     const fetchSeatsAndDetails = async () => {
-      if (!targetId) return;
-      setLoading(true);
+      if (!showtimeId || !isValidObjectId(showtimeId)) {
+        setErrorMessage("Unable to load seats: Invalid showtime ID.");
+        setLoading(false);
+        return;
+      }
 
-      const priceFromState = passedShowtime?.price;
+      setLoading(true);
+      setErrorMessage(null);
 
       try {
-        let currentShowtimeId = targetId;
-        let seatsData = [];
+        const seatsRes = await axios.get(`${process.env.REACT_APP_API_URL}/seats/${showtimeId}`);
+        const raw = seatsRes.data;
+        const seatsData = Array.isArray(raw) ? raw : (raw?.data || raw?.seats || []);
 
-        // 1. Try fetching seats directly via GET /seats/:targetId
-        try {
-          const seatsRes = await axios.get(`${process.env.REACT_APP_API_URL}/seats/${targetId}`);
-          const raw = seatsRes.data;
-          seatsData = Array.isArray(raw) ? raw : (raw?.data || raw?.seats || []);
-        } catch (err) {
-          // targetId might be a movieId
-        }
-
-        // 2. If no seats found, resolve showtime by movieId
         if (!seatsData || seatsData.length === 0) {
-          try {
-            const stRes = await axios.get(`${process.env.REACT_APP_API_URL}/showtimes/movie/${targetId}`);
-            const rawSt = stRes.data;
-            const list = Array.isArray(rawSt) ? rawSt : (rawSt?.data || []);
-            if (list.length > 0) {
-              currentShowtimeId = list[0]._id;
-              const retrySeats = await axios.get(`${process.env.REACT_APP_API_URL}/seats/${currentShowtimeId}`);
-              const retryRaw = retrySeats.data;
-              seatsData = Array.isArray(retryRaw) ? retryRaw : (retryRaw?.data || retryRaw?.seats || []);
-            }
-          } catch (stErr) {
-            try {
-              const allStRes = await axios.get(`${process.env.REACT_APP_API_URL}/showtimes`);
-              const rawAll = allStRes.data;
-              const allSt = Array.isArray(rawAll) ? rawAll : (rawAll?.data || []);
-              const match = allSt.find(s =>
-                s._id === targetId ||
-                s.movieId === targetId ||
-                s.movieId?._id === targetId ||
-                s.movie === targetId ||
-                s.movie?._id === targetId
-              );
-              if (match) {
-                currentShowtimeId = match._id;
-                const retrySeats = await axios.get(`${process.env.REACT_APP_API_URL}/seats/${currentShowtimeId}`);
-                const retryRaw = retrySeats.data;
-                seatsData = Array.isArray(retryRaw) ? retryRaw : (retryRaw?.data || retryRaw?.seats || []);
-              }
-            } catch (e) {
-              console.error("Could not resolve showtime", e);
-            }
-          }
-        }
-
-        let stDetail = null;
-        if (currentShowtimeId) {
-          try {
-            const stDetailRes = await axios.get(`${process.env.REACT_APP_API_URL}/showtimes/${currentShowtimeId}`);
-            const stRaw = stDetailRes.data;
-            stDetail = stRaw.data || stRaw;
-            setShowtimeDetails(stDetail);
-          } catch (e) {
-            // fallback
-          }
-        }
-
-        const effectivePrice = priceFromState || stDetail?.price || 2000;
-
-        // 3. Fallback layout generator if backend returns no seats
-        if (!seatsData || seatsData.length === 0) {
-          seatsData = generateDefaultSeats(currentShowtimeId, effectivePrice);
+          setErrorMessage("Unable to load seats for this showtime.");
+          setSeats([]);
         } else {
-          // Apply effective price to seats
-          seatsData = seatsData.map(s => ({
-            ...s,
-            price: effectivePrice
-          }));
+          setSeats(seatsData);
         }
 
-        setSeats(seatsData);
-        setResolvedShowtimeId(currentShowtimeId);
-
+        // Fetch showtime details if available
+        try {
+          const stDetailRes = await axios.get(`${process.env.REACT_APP_API_URL}/showtimes/${showtimeId}`);
+          const stRaw = stDetailRes.data;
+          setShowtimeDetails(stRaw.data || stRaw);
+        } catch (e) {
+          // Keep location state showtime if detail fetch fails
+        }
       } catch (err) {
         console.error("Error fetching seats:", err);
-        const fallbackPrice = priceFromState || 2000;
-        setSeats(generateDefaultSeats(targetId, fallbackPrice));
+        setErrorMessage("Unable to load seats for this showtime.");
+        setSeats([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchSeatsAndDetails();
-  }, [targetId, passedShowtime]);
+  }, [showtimeId]);
 
   // 2. Handle Clicking a Seat
   const handleSeatClick = (seat) => {
@@ -233,6 +157,17 @@ const SeatSelection = () => {
       return;
     }
 
+    if (!showtimeId || !isValidObjectId(showtimeId)) {
+      alert("Invalid showtime reference. Please go back and re-select your showtime.");
+      return;
+    }
+
+    const hasInvalidSeats = selectedSeats.some(s => !s._id || !isValidObjectId(s._id));
+    if (hasInvalidSeats) {
+      alert("Unable to proceed with unverified seats. Please refresh and try again.");
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please login to continue with booking!");
@@ -240,12 +175,10 @@ const SeatSelection = () => {
       return;
     }
 
-    const finalShowtimeId = resolvedShowtimeId || targetId;
-
-    navigate(`/buy-tickets/${finalShowtimeId}`, {
+    navigate(`/buy-tickets/${showtimeId}`, {
       state: {
         seats: selectedSeats,
-        showtimeId: finalShowtimeId,
+        showtimeId: showtimeId,
         totalPrice: totalPrice,
         movieTitle: movieTitle,
         showtime: startTime,
@@ -264,6 +197,18 @@ const SeatSelection = () => {
           <div className="spinner-ring"></div>
           <p>Loading cinema hall layout...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="seat-selection-page error-state" style={{ padding: '80px 20px', textAlign: 'center' }}>
+        <h2 style={{ color: '#ef4444', marginBottom: '16px' }}>Unable to load seats for this showtime</h2>
+        <p style={{ color: '#94a3b8', marginBottom: '24px' }}>{errorMessage}</p>
+        <button className="back-nav-btn" onClick={() => navigate(-1)} style={{ margin: '0 auto', display: 'inline-flex' }}>
+          <FiArrowLeft /> Return to Movie Details
+        </button>
       </div>
     );
   }

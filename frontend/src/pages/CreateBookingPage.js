@@ -92,6 +92,11 @@ const CreateBookingPage = () => {
   const handleConfirmBooking = async () => {
     if (isProcessing) return;
 
+    if (!showtimeId || !isObjectId(showtimeId)) {
+      alert("Invalid showtime ID. Please return to movie details and select a valid showtime.");
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please login to complete booking!");
@@ -102,17 +107,13 @@ const CreateBookingPage = () => {
     setIsProcessing(true);
 
     try {
-      const formattedSeats = seats
-        ? (typeof seats[0] === 'string' ? seats : seats.map(s => `${s.row}${s.number}`))
-        : [];
-
       console.log("CURRENT SHOWTIME ID:", showtimeId);
 
       // Navigate to Payment Checkout Page
       navigate(`/payment/checkout`, {
         state: {
           showtimeId: showtimeId,
-          selectedSeats: formattedSeats,
+          selectedSeats: seats, // Pass full seat objects containing real _id values
           totalPrice: finalTotalPrice,
           movieTitle: movieTitle,
           showtime: startTime,
