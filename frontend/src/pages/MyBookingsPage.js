@@ -2,35 +2,47 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
-import './Booking.css';
+import {
+  FiFilm,
+  FiCalendar,
+  FiCheck,
+  FiXCircle,
+  FiTrash2,
+  FiPlus,
+  FiAlertTriangle,
+  FiBookmark
+} from 'react-icons/fi';
+import './MyBookingsPage.css';
 
 const MyBookingsPage = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-// Get actual logged-in user ID
-const user = JSON.parse(localStorage.getItem('user') || '{}');
-const userId = user._id || user.id;
+  // Custom glass modal states for ticket cancellation & clear history
+  const [cancelModalId, setCancelModalId] = useState(null);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-console.log('Logged in user:', user);
-console.log('Using userId:', userId);
+  // Get logged-in user ID
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = user._id || user.id;
+
+  // Scroll to top automatically when page opens
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const fetchHistory = async () => {
       if (!userId) {
-            setLoading(false);
-            return;
+        setLoading(false);
+        return;
       }
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/bookings/user/${userId}`);
-        
-        // Handle array vs object response
         const data = Array.isArray(res.data) ? res.data : res.data.bookings || [];
-        
-        // Sort: Newest bookings first
         const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
         setHistory(sortedData);
       } catch (err) {
         console.error("Error fetching bookings:", err);
@@ -41,147 +53,304 @@ console.log('Using userId:', userId);
     fetchHistory();
   }, [userId]);
 
-  const handleCancel = async (id) => {
-    if(!window.confirm("Are you sure you want to cancel this booking?")) return;
-    
+  // Execute Ticket Cancellation
+  const executeCancel = async (id) => {
+    setActionLoading(true);
     try {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/bookings/${id}`);
-        
-        // Update the booking status to "Cancelled" instead of removing it
-        setHistory(history.map(b => 
-            b._id === id ? { ...b, status: 'Cancelled' } : b
-        ));
-        
-        alert("Booking cancelled successfully.");
+      await axios.delete(`${process.env.REACT_APP_API_URL}/bookings/${id}`);
+      setHistory(history.map(b =>
+        b._id === id ? { ...b, status: 'Cancelled' } : b
+      ));
+      setCancelModalId(null);
     } catch (err) {
-        console.error("Cancel failed:", err);
-        alert("Could not cancel booking.");
+      console.error("Cancel failed:", err);
+      alert("Could not cancel booking. Please try again.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Execute Clear History
+  const executeClearHistory = async () => {
+    setActionLoading(true);
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/bookings/clear-history`, { userId });
+      setShowClearModal(false);
+      window.location.reload();
+    } catch (err) {
+      if (err.response) {
+        alert(`FAILED: ${err.response.status} - ${err.response.statusText}\n${JSON.stringify(err.response.data)}`);
+      } else {
+        alert(`Network Error: Is the backend running? \n${err.message}`);
+      }
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // Helper to safely display seats
   const renderSeats = (seats) => {
     if (!seats || seats.length === 0) return "None";
-    
-    // If seats are objects (Populated)
     if (typeof seats[0] === 'object') {
-       // Seat model has 'row' (String) and 'number' (Number)
-        return seats.map(s => `${s.row}${s.number}`).join(", ");
+      return seats.map(s => `${s.row}${s.number}`).join(", ");
     }
-    
-    // If seats are just strings (IDs) - Fallback
     return seats.join(", ");
   };
 
-  if (loading) return <PageLayout><div style={{padding:'50px', color:'white', textAlign:'center'}}>Loading History...</div></PageLayout>;
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="my-tickets-wallet-page">
+          <div className="loading-dashboard-box">
+            <div className="dashboard-spinner" />
+            <h2>Opening Ticket Wallet...</h2>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
-    <div className="history-page-container">
-      <div className="history-page-wrapper">
-        
-        {/* Left Side: Title Box */}
-        <div className="history-title-box">
-          <h1 className="history-title">MY<br/>BOOKING<br/>HISTORY</h1>
-          <p style={{color: '#94a3b8', marginTop: '15px'}}>
-            You have {history.length} active bookings.
-          </p>
-          
-          <button 
-            className="confirm-btn" 
-            style={{marginTop: '30px', minWidth: '100%', fontSize: '0.9rem'}} 
-            onClick={() => navigate('/')}
-          >
-            BOOK NEW MOVIE
-          </button>
-          
-          <button 
-              className="history-btn" 
-              style={{marginTop: '15px', minWidth: '100%', fontSize: '0.9rem', border: '1px solid #ff3333', color: '#ff3333'}} 
-              onClick={async () => {
-                  if(window.confirm("Delete ALL history? This cannot be undone.")) {
-                      try {
-                          await axios.post(`${process.env.REACT_APP_API_URL}/bookings/clear-history`, { 
-                              userId: userId
-                          });
-                          window.location.reload(); 
-                      } catch (err) {
-                          if (err.response) {
-                              alert(`FAILED: ${err.response.status} - ${err.response.statusText}\n${JSON.stringify(err.response.data)}`);
-                          } else {
-                              alert(`Network Error: Is the backend running? \n${err.message}`);
-                          }
-                      }
-                  }
-              }}
-            >
-          CLEAR HISTORY
-        </button>
-            
-        </div>
+      <div className="my-tickets-wallet-page">
+        <div className="wallet-container">
 
-        {/* Right Side: Grid of Cards */}
-        <div className="history-list">
-          {history.length === 0 ? (
-             <h3 style={{color:'white'}}>No bookings found.</h3>
-          ) : (
-             history.map(b => (
-                <div key={b._id} className="history-item">
-                  <div className="item-info">
-                    <h3>REF: #{b._id.slice(-6).toUpperCase()}</h3>
-                    
-                    {/* 👇 UPDATED: Uses 'showtimeId' instead of 'showtime' */}
-                    <p>
-                        <span style={{color:'#94a3b8'}}>Movie:</span> 
-                        <span>{b.showtimeId?.movie?.title || "Movie Name Loading..."}</span>
-                    </p>
+          {/* Header Section */}
+          <div className="wallet-header">
+            <div className="wallet-title-group">
+              <h1 className="wallet-main-title">My Tickets</h1>
+              <p className="wallet-subtitle">
+                Your upcoming and past cinema experiences
+              </p>
+            </div>
 
-                    {/* 👇 UPDATED: Uses 'seatIds' instead of 'seats' */}
-                    <p>
-                        <span style={{color:'#94a3b8'}}>Seats:</span> 
-                        <span>{renderSeats(b.seatIds)}</span>
-                    </p>
+            <div className="header-buttons-row">
+              <button
+                className="btn-book-another"
+                onClick={() => navigate('/')}
+              >
+                <FiPlus /> Book Another Movie
+              </button>
 
-                    {/* 👇 UPDATED: Uses 'showtimeId' for Date */}
-                    <p>
-                        <span style={{color:'#94a3b8'}}>Date:</span> 
-                        <span>{b.showtimeId ? new Date(b.showtimeId.date).toLocaleDateString() : "Date N/A"}</span>
-                    </p>
-                    
-                    {/* 👇 UPDATED: Uses 'showtimeId' for Time */}
-                    <p>
-                        <span style={{color:'#94a3b8'}}>Time:</span> 
-                        <span>{b.showtimeId ? b.showtimeId.startTime : "Time N/A"}</span>
-                    </p>
+              {history.length > 0 && (
+                <button
+                  className="btn-clear-history-subtle"
+                  onClick={() => setShowClearModal(true)}
+                  title="Clear all past history"
+                >
+                  <FiTrash2 /> Clear History
+                </button>
+              )}
+            </div>
+          </div>
 
-                    <p>
-                        <span style={{color:'#94a3b8'}}>Paid:</span> 
-                        <span style={{color: '#00ff88'}}>Rs. {b.totalPrice}</span>
-                    </p>
-
-                    <p>
-                        <span style={{color:'#94a3b8'}}>Status:</span> 
-                        <span style={{
-                            color: b.status === 'Cancelled' ? '#ff3333' : '#00ff88',
-                            fontWeight: 'bold'
-                        }}>
-                            {b.status || 'Confirmed'}
-                        </span>
-                    </p>
-                  </div>
-                  
-                  {b.status !== 'Cancelled' && (
-                      <button className="cancel-btn-outline" onClick={() => handleCancel(b._id)}>
-                          CANCEL TICKET
-                      </button>
-                  )}
+          {/* Tickets List */}
+          <div className="wallet-tickets-list">
+            {history.length === 0 ? (
+              /* Empty State */
+              <div className="empty-wallet-card">
+                <div className="empty-wallet-icon">
+                  <FiBookmark />
                 </div>
-             ))
-          )}
-        </div>
+                <h3 className="empty-wallet-title">No bookings yet</h3>
+                <p className="empty-wallet-subtitle">Your next cinematic experience is waiting.</p>
+                <button
+                  className="btn-book-another"
+                  onClick={() => navigate('/')}
+                >
+                  Explore Movies
+                </button>
+              </div>
+            ) : (
+              /* User Cinema Wallet Pass Cards */
+              history.map(b => {
+                const isCancelled = b.status === 'Cancelled';
+                const getPosterUrl = (booking) => {
+                  const m = booking?.showtimeId?.movie || booking?.movie || {};
+                  const url = m.posterUrl || m.poster || m.bannerUrl || booking?.moviePoster || booking?.posterUrl;
+                  if (!url) return null;
+                  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+                    return url;
+                  }
+                  if (url.startsWith('/')) {
+                    return `${process.env.REACT_APP_API_URL || ''}${url}`;
+                  }
+                  return url;
+                };
 
+                const posterUrl = getPosterUrl(b);
+                const movieTitle = b.showtimeId?.movie?.title || b.movieTitle || "Cinema Movie Pass";
+                const refCode = b._id ? b._id.slice(-6).toUpperCase() : 'TICKET';
+
+                // Format Date & Time cleanly (e.g. Saturday • 7:30 PM)
+                const dateObj = b.showtimeId?.date ? new Date(b.showtimeId.date) : null;
+                const formattedDayStr = dateObj
+                  ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                  : "Date N/A";
+                const timeStr = b.showtimeId?.startTime || "7:30 PM";
+                const dateTimeDisplay = `${formattedDayStr} • ${timeStr}`;
+
+                const seatStr = renderSeats(b.seatIds);
+
+                // Format currency: Rs. XXXX (NO DOLLAR SYMBOLS)
+                const rawAmount = b.totalPrice || 0;
+                const formattedAmount = typeof rawAmount === 'number'
+                  ? rawAmount.toLocaleString('en-IN')
+                  : rawAmount;
+
+                return (
+                  <div
+                    key={b._id}
+                    className={`ticket-wallet-card ${isCancelled ? 'is-cancelled' : ''}`}
+                  >
+
+                    {/* Visual Poster Frame */}
+                    <div className="card-poster-side">
+                      {posterUrl && (
+                        <img
+                          src={posterUrl}
+                          alt={movieTitle}
+                          className="card-poster-img"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.parentElement.querySelector('.poster-fallback');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      )}
+                      <div
+                        className="poster-fallback"
+                        style={{ display: posterUrl ? 'none' : 'flex' }}
+                      >
+                        <FiFilm />
+                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>CINENOVA</span>
+                      </div>
+                    </div>
+
+                    {/* Movie Info & Details */}
+                    <div className="card-info-side">
+                      <div>
+                        <h3 className="card-movie-title">{movieTitle}</h3>
+                        <div className="card-datetime-row">
+                          <FiCalendar /> <span>{dateTimeDisplay}</span>
+                        </div>
+                      </div>
+
+                      <div className="card-details-row">
+                        <span className="detail-pill">Seats: {seatStr}</span>
+                        <span className="detail-amount">Rs. {formattedAmount}</span>
+                        <span className="card-ref-code">#{refCode}</span>
+                      </div>
+                    </div>
+
+                    {/* Status & Action */}
+                    <div className="card-status-side">
+                      <span className={`wallet-status-tag ${isCancelled ? 'cancelled' : 'confirmed'}`}>
+                        {isCancelled ? <FiXCircle /> : <FiCheck />}
+                        {isCancelled ? 'Cancelled' : 'Confirmed'}
+                      </span>
+
+                      <div className="card-actions-group">
+                        <button
+                          className="btn-view-pass"
+                          onClick={() => navigate('/booking-success', {
+                            state: {
+                              bookingRef: b._id,
+                              movieTitle: movieTitle,
+                              showtime: dateTimeDisplay,
+                              seats: seatStr,
+                              totalPrice: rawAmount,
+                              status: b.status || (isCancelled ? 'Cancelled' : 'Confirmed')
+                            }
+                          })}
+                        >
+                          View Ticket
+                        </button>
+
+                        {!isCancelled && (
+                          <button
+                            className="btn-cancel-pass"
+                            onClick={() => setCancelModalId(b._id)}
+                          >
+                            Cancel Ticket
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+        </div>
       </div>
-    </div>
+
+      {/* Glass Confirmation Modal for Ticket Cancellation */}
+      {cancelModalId && (
+        <div className="custom-modal-overlay" onClick={() => setCancelModalId(null)}>
+          <div className="custom-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-warning-icon">
+              <FiAlertTriangle />
+            </div>
+            <h3 className="modal-title">Cancel Booking?</h3>
+            <p className="modal-desc">
+              Are you sure you want to cancel this ticket?<br />
+              This action cannot be undone once confirmed.
+            </p>
+            <div className="modal-actions-row">
+              <button
+                className="btn-modal-cancel"
+                onClick={() => setCancelModalId(null)}
+                disabled={actionLoading}
+              >
+                Keep Ticket
+              </button>
+              <button
+                className="btn-modal-confirm-danger"
+                onClick={() => executeCancel(cancelModalId)}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Cancelling..." : "Confirm Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Glass Confirmation Modal for Clear History */}
+      {showClearModal && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-warning-icon">
+              <FiAlertTriangle />
+            </div>
+            <h3 className="modal-title">Clear Booking History?</h3>
+            <p className="modal-desc">
+              This will permanently remove your booking history.<br />
+              This action cannot be undone.
+            </p>
+            <div className="modal-actions-row">
+              <button
+                className="btn-modal-cancel"
+                onClick={() => setShowClearModal(false)}
+                disabled={actionLoading}
+              >
+                Keep History
+              </button>
+              <button
+                className="btn-modal-confirm-danger"
+                onClick={executeClearHistory}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Clearing..." : "Clear All History"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </PageLayout>
   );
 };

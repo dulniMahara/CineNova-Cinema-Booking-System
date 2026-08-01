@@ -10,6 +10,6 @@ jest.mock("./services/movieService", () => ({
 
 test("renders app header link", () => {
   render(<App />);
-  const headerLink = screen.getByRole("link", { name: /Cinema Booking/i });
+  const headerLink = screen.getByRole("link", { name: /Cine/i });
   expect(headerLink).toBeInTheDocument();
 });

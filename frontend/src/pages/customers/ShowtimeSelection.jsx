@@ -13,7 +13,7 @@ const ShowtimeSelection = () => {
   const [showtimes, setShowtimes] = useState([]);
   const [halls, setHalls] = useState([]); // <--- State to store Halls lookup
   const [loading, setLoading] = useState(true);
-  
+
   const [selectedDate, setSelectedDate] = useState("");
 
   useEffect(() => {
@@ -34,21 +34,21 @@ const ShowtimeSelection = () => {
 
         // 4. Set Default Date (prefer today if available, else first future date)
         if (allShowtimes.length > 0) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const dates = [...new Set(allShowtimes.map(st => new Date(st.date).toDateString()))]
-              .filter(dateStr => {
-                const dateObj = new Date(dateStr);
-                dateObj.setHours(0,0,0,0);
-                return dateObj >= today;
-              });
-            dates.sort((a, b) => new Date(a) - new Date(b));
-            const todayStr = today.toDateString();
-            if (dates.includes(todayStr)) {
-              setSelectedDate(todayStr);
-            } else if (dates.length > 0) {
-              setSelectedDate(dates[0]);
-            }
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dates = [...new Set(allShowtimes.map(st => new Date(st.date).toDateString()))]
+            .filter(dateStr => {
+              const dateObj = new Date(dateStr);
+              dateObj.setHours(0, 0, 0, 0);
+              return dateObj >= today;
+            });
+          dates.sort((a, b) => new Date(a) - new Date(b));
+          const todayStr = today.toDateString();
+          if (dates.includes(todayStr)) {
+            setSelectedDate(todayStr);
+          } else if (dates.length > 0) {
+            setSelectedDate(dates[0]);
+          }
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -65,11 +65,11 @@ const ShowtimeSelection = () => {
 
   // Only show today and future dates
   const today = new Date();
-  today.setHours(0,0,0,0); // Remove time part for accurate comparison
+  today.setHours(0, 0, 0, 0); // Remove time part for accurate comparison
   const uniqueDates = [...new Set(showtimes.map(st => new Date(st.date).toDateString()))]
     .filter(dateStr => {
       const dateObj = new Date(dateStr);
-      dateObj.setHours(0,0,0,0);
+      dateObj.setHours(0, 0, 0, 0);
       return dateObj >= today;
     });
   uniqueDates.sort((a, b) => new Date(a) - new Date(b));
@@ -84,12 +84,12 @@ const ShowtimeSelection = () => {
 
     // Case A: Hall is populated (Object with name)
     if (st.hall && st.hall.name) {
-        hallName = st.hall.name;
-    } 
+      hallName = st.hall.name;
+    }
     // Case B: Hall is just an ID (String) -> Lookup in 'halls' array
     else if (st.hall) {
-        const foundHall = halls.find(h => h._id === st.hall);
-        if (foundHall) hallName = foundHall.name;
+      const foundHall = halls.find(h => h._id === st.hall);
+      if (foundHall) hallName = foundHall.name;
     }
 
     if (!acc[hallName]) acc[hallName] = [];
@@ -99,12 +99,14 @@ const ShowtimeSelection = () => {
   // -----------------------------
 
   const handleTimeClick = (st) => {
-    const showtimeObj = typeof st === 'object' ? st : showtimes.find(item => item._id === st);
-    const targetStId = showtimeObj?._id || st;
-    navigate(`/booking/${targetStId}`, {
+
+    console.log("🔥 NEW SHOWTIME FUNCTION RUNNING 🔥");
+    console.log("SHOWTIME CLICKED:", st);
+
+    navigate(`/booking/${st._id}`, {
       state: {
-        movie: movie,
-        showtime: showtimeObj
+        movie,
+        showtime: st
       }
     });
   };
@@ -112,24 +114,24 @@ const ShowtimeSelection = () => {
   return (
     <div className="selection-page">
       {/* HEADER - UNCHANGED */}
-      <div 
+      <div
         className="selection-header-banner"
         style={{ backgroundImage: `linear-gradient(to right, rgba(11, 15, 25, 0.95), rgba(11, 15, 25, 0.8)), url(${movie.posterUrl})` }}
       >
         <div className="header-container">
           <div className="header-poster-wrapper">
-              {movie.posterUrl ? (
-                  <img src={movie.posterUrl} alt={movie.title} className="header-poster" />
-              ) : (
-                  <div className="placeholder-poster">No Image</div>
-              )}
+            {movie.posterUrl ? (
+              <img src={movie.posterUrl} alt={movie.title} className="header-poster" />
+            ) : (
+              <div className="placeholder-poster">No Image</div>
+            )}
           </div>
-          
+
           <div className="header-content">
             <h1>{movie.title}</h1>
             <div className="meta-tags">
-                <span className="tag rating">⭐ {movie.rating}</span>
-                <span className="tag">{movie.duration} mins</span>
+              <span className="tag rating">⭐ {movie.rating}</span>
+              <span className="tag">{movie.duration} mins</span>
             </div>
             <p className="genres">
               {Array.isArray(movie.genre) ? movie.genre.join(" | ") : movie.genre}
@@ -141,82 +143,82 @@ const ShowtimeSelection = () => {
       {/* DATE BAR - UNCHANGED */}
       <div className="date-bar-container">
         <div className="date-bar">
-            {uniqueDates.length === 0 ? (
-                <div className="no-dates">No dates available</div>
-            ) : (
-                uniqueDates.map((dateStr) => {
-                    const dateObj = new Date(dateStr);
-                    const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' }); 
-                    const dayNum = dateObj.getDate(); 
-                    const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
-                    const isActive = selectedDate === dateStr;
+          {uniqueDates.length === 0 ? (
+            <div className="no-dates">No dates available</div>
+          ) : (
+            uniqueDates.map((dateStr) => {
+              const dateObj = new Date(dateStr);
+              const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayNum = dateObj.getDate();
+              const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+              const isActive = selectedDate === dateStr;
 
-                    return (
-                        <button 
-                            key={dateStr} 
-                            className={`date-card ${isActive ? "active" : ""}`}
-                            onClick={() => setSelectedDate(dateStr)}
-                        >
-                            <span className="date-month">{month}</span>
-                            <span className="date-num">{dayNum}</span>
-                            <span className="date-day">{day}</span>
-                        </button>
-                    );
-                })
-            )}
+              return (
+                <button
+                  key={dateStr}
+                  className={`date-card ${isActive ? "active" : ""}`}
+                  onClick={() => setSelectedDate(dateStr)}
+                >
+                  <span className="date-month">{month}</span>
+                  <span className="date-num">{dayNum}</span>
+                  <span className="date-day">{day}</span>
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
 
       {/* --- HALL & TIMES SECTION (SCOPE LAYOUT) --- */}
       <div className="times-container">
         {Object.keys(showtimesByHall).length === 0 ? (
-            <div className="no-showtimes-msg">
-                <h3>No showtimes scheduled for this date.</h3>
-                <p>Please select another date above.</p>
-            </div>
+          <div className="no-showtimes-msg">
+            <h3>No showtimes scheduled for this date.</h3>
+            <p>Please select another date above.</p>
+          </div>
         ) : (
-            Object.keys(showtimesByHall).map((hallName) => (
-                <div key={hallName} className="scope-hall-row">
-                    
-                    {/* LEFT COL: Hall Name */}
-                    <div className="hall-left-col">
-                        <h2 className="scope-hall-name">{hallName}</h2>
-                        <span className="scope-subtitle">Digital Experience</span>
-                    </div>
+          Object.keys(showtimesByHall).map((hallName) => (
+            <div key={hallName} className="scope-hall-row">
 
-                    {/* RIGHT COL: Buttons */}
-                    <div className="hall-right-col">
-                        <div className="time-grid">
-                          {showtimesByHall[hallName].map((st) => {
-                            // Combine date and startTime to get the full showtime datetime
-                            const showDate = new Date(st.date);
-                            // Assume st.startTime is in format 'HH:mm AM/PM' (e.g., '10:15 AM')
-                            const [time, modifier] = st.startTime.split(' ');
-                            let [hours, minutes] = time.split(':');
-                            hours = parseInt(hours, 10);
-                            minutes = parseInt(minutes, 10);
-                            if (modifier === 'PM' && hours !== 12) hours += 12;
-                            if (modifier === 'AM' && hours === 12) hours = 0;
-                            showDate.setHours(hours, minutes, 0, 0);
-                            const now = new Date();
-                            const isPast = showDate < now;
-                            return (
-                              <button
-                                key={st._id}
-                                className={`scope-time-btn${isPast ? ' locked' : ''}`}
-                                onClick={() => handleTimeClick(st)}
-                                disabled={isPast}
-                              >
-                                <span className="time-text">{st.startTime}</span>
-                                <span className="price-text">Rs. {st.price}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                    </div>
+              {/* LEFT COL: Hall Name */}
+              <div className="hall-left-col">
+                <h2 className="scope-hall-name">{hallName}</h2>
+                <span className="scope-subtitle">Digital Experience</span>
+              </div>
 
+              {/* RIGHT COL: Buttons */}
+              <div className="hall-right-col">
+                <div className="time-grid">
+                  {showtimesByHall[hallName].map((st) => {
+                    // Combine date and startTime to get the full showtime datetime
+                    const showDate = new Date(st.date);
+                    // Assume st.startTime is in format 'HH:mm AM/PM' (e.g., '10:15 AM')
+                    const [time, modifier] = st.startTime.split(' ');
+                    let [hours, minutes] = time.split(':');
+                    hours = parseInt(hours, 10);
+                    minutes = parseInt(minutes, 10);
+                    if (modifier === 'PM' && hours !== 12) hours += 12;
+                    if (modifier === 'AM' && hours === 12) hours = 0;
+                    showDate.setHours(hours, minutes, 0, 0);
+                    const now = new Date();
+                    const isPast = showDate < now;
+                    return (
+                      <button
+                        key={st._id}
+                        className={`scope-time-btn${isPast ? ' locked' : ''}`}
+                        onClick={() => handleTimeClick(st)}
+                        disabled={isPast}
+                      >
+                        <span className="time-text">{st.startTime}</span>
+                        <span className="price-text">Rs. {st.price}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-            ))
+              </div>
+
+            </div>
+          ))
         )}
       </div>
     </div>

@@ -1,3 +1,5 @@
+/* CineNova 2026 - Premium Dark Glass Profile Dropdown Theme */
+
 .profile-dropdown-container {
   position: relative;
   display: inline-block;
@@ -5,118 +7,158 @@
 
 .profile-trigger {
   cursor: pointer;
-  transition: transform 0.2s ease;
+  border-radius: 50%;
+  padding: 2px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
 .profile-trigger:hover {
-  transform: scale(1.05);
+  transform: scale(1.06);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.8);
 }
 
+/* Glass Dropdown Panel */
 .profile-dropdown {
   position: absolute;
-  top: 55px;
+  top: 52px;
   right: 0;
-  width: 320px;
-  background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 1000;
-  animation: slideDown 0.2s ease;
+  width: 290px;
+  background: rgba(15, 18, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.12);
+  z-index: 9999;
+  overflow: hidden;
+  animation: dropdownSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideDown {
+@keyframes dropdownSlideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-.profile-header {
-  padding: 30px 20px;
-  text-align: center;
-  background: linear-gradient(135deg, #141436 0%, #1a1a3e 100%);
-  border-radius: 12px 12px 0 0;
-  color: white;
+/* Header Section */
+.dropdown-header {
+  padding: 20px 18px 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.header-avatar-ring {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.header-user-details {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  border-bottom: 2px solid rgba(255, 61, 0, 0.3);
+  overflow: hidden;
 }
 
-.profile-header h3 {
-  margin: 15px 0 5px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
-}
-
-.profile-email {
-  font-size: 14px;
-  opacity: 0.8;
+.header-user-details .user-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #FFFFFF;
   margin: 0;
-  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.profile-role-badge {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 4px 12px;
-  background: #ff3d00;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: white;
+.header-user-details .user-email {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 2px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.profile-divider {
+/* Divider */
+.dropdown-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   margin: 0;
 }
 
-.profile-menu {
-  padding: 8px 0;
+/* Menu Sections */
+.dropdown-section {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.profile-menu-item {
+.dropdown-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #10b981;
+  text-transform: uppercase;
+  padding: 6px 10px 4px 10px;
+}
+
+.dropdown-menu-item {
   width: 100%;
-  padding: 12px 20px;
-  background: none;
+  padding: 10px 12px;
+  background: transparent;
   border: none;
+  border-radius: 12px;
   text-align: left;
-  font-size: 15px;
-  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e2e8f0;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
 }
 
-.profile-menu-item:hover {
-  background: rgba(255, 61, 0, 0.2);
-  padding-left: 25px;
+.dropdown-menu-item .menu-icon {
+  font-size: 1.05rem;
+  color: #fbbf24;
+  transition: transform 0.25s ease, color 0.25s ease;
+  flex-shrink: 0;
 }
 
-.profile-menu-item.logout {
-  color: #fff;
+.dropdown-menu-item:hover {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  transform: translateX(4px);
 }
 
-.profile-menu-item.logout:hover {
-  background: rgba(255, 61, 0, 0.2);
-  color: #ff3d00;
+.dropdown-menu-item:hover .menu-icon {
+  color: #34d399;
+  transform: scale(1.15);
 }
 
-.menu-icon {
-  font-size: 18px;
-  width: 24px;
-  display: inline-block;
-  color: #fff;
+/* Logout Button Item */
+.dropdown-menu-item.logout-item {
+  color: #f87171;
+}
+
+.dropdown-menu-item.logout-item .menu-icon {
+  color: #f87171;
+}
+
+.dropdown-menu-item.logout-item:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.dropdown-menu-item.logout-item:hover .menu-icon {
+  color: #ef4444;
 }

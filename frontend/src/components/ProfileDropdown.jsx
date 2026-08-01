@@ -1,7 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserEdit, FaSignOutAlt } from 'react-icons/fa';
-import { MdConfirmationNumber, MdPayments } from 'react-icons/md';
+import { 
+  FiUser, 
+  FiBookmark, 
+  FiCreditCard, 
+  FiKey, 
+  FiLogOut 
+} from 'react-icons/fi';
 import Avatar from './Avatar';
 import './ProfileDropdown.css';
 
@@ -11,7 +16,6 @@ const ProfileDropdown = ({ onLogout }) => {
   const dropdownRef = useRef(null);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const role = localStorage.getItem('role');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -37,68 +41,90 @@ const ProfileDropdown = ({ onLogout }) => {
     }
   };
 
+  const handleItemClick = (path) => {
+    setIsOpen(false);
+    navigate(path);
+  };
+
   return (
     <div className="profile-dropdown-container" ref={dropdownRef}>
-      <div className="profile-trigger" onClick={() => setIsOpen(!isOpen)}>
+      <div className="profile-trigger" onClick={() => setIsOpen(!isOpen)} title="Account Menu">
         <Avatar name={user.name} size="medium" />
       </div>
 
       {isOpen && (
         <div className="profile-dropdown">
-          <div className="profile-header">
-            <Avatar name={user.name} size="large" />
-            <h3>{user.name}</h3>
-            <p className="profile-email">{user.email}</p>
-            <span className="profile-role-badge">{role}</span>
+          
+          {/* Profile Header */}
+          <div className="dropdown-header">
+            <div className="header-avatar-ring">
+              <Avatar name={user.name} size="large" />
+            </div>
+            <div className="header-user-details">
+              <h3 className="user-name">{user.name || 'CineNova Member'}</h3>
+              <p className="user-email">{user.email || 'member@cinenova.com'}</p>
+            </div>
           </div>
 
-          <div className="profile-divider"></div>
+          <div className="dropdown-divider"></div>
 
-          <div className="profile-menu">
-            <button 
-              className="profile-menu-item"
-              onClick={() => {
-                setIsOpen(false);
-                navigate('/profile');
-              }}
-            >
-              <span className="menu-icon"><FaUserEdit /></span>
-              Manage Profile
-            </button>
-            <button 
-              className="profile-menu-item"
-              onClick={() => {
-                setIsOpen(false);
-                navigate('/my-bookings');
-              }}
-            >
-              <span className="menu-icon"><MdConfirmationNumber /></span>
-              My Bookings
-            </button>
-            <button 
-              className="profile-menu-item"
-              onClick={() => {
-                setIsOpen(false);
-                navigate('/my-payments');
-              }}
-            >
-              <span className="menu-icon"><MdPayments /></span>
-              My Payments
-            </button>
-          </div>
-
-          <div className="profile-divider"></div>
-
-          <div className="profile-menu">
+          {/* Section 1: My Account */}
+          <div className="dropdown-section">
+            <span className="dropdown-section-label">My Account</span>
             
             <button 
-              className="profile-menu-item logout"
-              onClick={handleLogout}
+              className="dropdown-menu-item"
+              onClick={() => handleItemClick('/profile')}
             >
-              <span className="menu-icon"><FaSignOutAlt /></span>
-              Log out
+              <FiUser className="menu-icon" />
+              <span>My Profile</span>
+            </button>
+
+            <button 
+              className="dropdown-menu-item"
+              onClick={() => handleItemClick('/my-bookings')}
+            >
+              <FiBookmark className="menu-icon" />
+              <span>My Bookings</span>
+            </button>
+
+            <button 
+              className="dropdown-menu-item"
+              onClick={() => handleItemClick('/my-payments')}
+            >
+              <FiCreditCard className="menu-icon" />
+              <span>Payment History</span>
             </button>
           </div>
+
+          <div className="dropdown-divider"></div>
+
+          {/* Section 2: Settings */}
+          <div className="dropdown-section">
+            <span className="dropdown-section-label">Settings</span>
+            
+            <button 
+              className="dropdown-menu-item"
+              onClick={() => handleItemClick('/profile#change-password')}
+            >
+              <FiKey className="menu-icon" />
+              <span>Change Password</span>
+            </button>
+          </div>
+
+          <div className="dropdown-divider"></div>
+
+          {/* Section 3: Account / Logout */}
+          <div className="dropdown-section">
+            <button 
+              className="dropdown-menu-item logout-item"
+              onClick={handleLogout}
+            >
+              <FiLogOut className="menu-icon" />
+              <span>Logout</span>
+            </button>
+          </div>
+
         </div>
       )}
     </div>

@@ -43,15 +43,15 @@ import './App.css';
 import './ToastStyles.css';
 
 function App() {
-  const role = localStorage.getItem("role"); 
+  const role = localStorage.getItem("role");
 
   return (
     <SearchProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
-        
+
         {/* --- Notification Popup Container --- */}
-        <ToastContainer 
+        <ToastContainer
           position="top-right"
           autoClose={4000}
           theme="dark"
@@ -60,7 +60,7 @@ function App() {
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          style={{ zIndex: 99999999, fontSize: '16px' }} 
+          style={{ zIndex: 99999999, fontSize: '16px' }}
         />
 
         <Routes>
@@ -165,14 +165,12 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/confirm-password" element={<ConfirmPassword />} />
-          <Route path="/seats" element={<SeatSelection />} />
-          <Route path="/booking/:id" element={<SeatSelection />} />
           <Route path="/booking/:showtimeId" element={<SeatSelection />} />
           <Route path="/buy-tickets/:id" element={<CreateBookingPage />} />
           <Route path="/create-booking" element={<CreateBookingPage />} />
           <Route path="/booking-success" element={<BookingSuccess />} />
           <Route path="/my-bookings" element={<ProtectedRoute><MyBookingPage /></ProtectedRoute>} />
-          
+
           <Route
             path="/profile"
             element={
@@ -234,60 +232,60 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route 
-            path="/buy-tickets/:movieId" 
+          <Route
+            path="/buy-tickets/:movieId"
             element={
               <PageLayout>
-              <ShowtimeSelection />
+                <ShowtimeSelection />
               </PageLayout>
-            } 
+            }
           />
           <Route path="/admin/halls"
             element={
               <ProtectedRoute roleRequired="admin">
                 <PageLayout isAdmin={true}>
-                   <HallManager />
+                  <HallManager />
                 </PageLayout>
               </ProtectedRoute>
-            } 
-           />
-           <Route path="/payment/:bookingId" 
+            }
+          />
+          <Route path="/payment/:bookingId"
             element={
               <ProtectedRoute>
                 <PageLayout>
-                   <PaymentPage />
+                  <PaymentPage />
                 </PageLayout>
               </ProtectedRoute>
-            } 
-           />
-           <Route path="/payments" 
-             element={
-               <ProtectedRoute roleRequired="admin">
-                   <AdminPayments />
-               </ProtectedRoute>
-             } 
-           />
+            }
+          />
+          <Route path="/payments"
+            element={
+              <ProtectedRoute roleRequired="admin">
+                <AdminPayments />
+              </ProtectedRoute>
+            }
+          />
 
-           <Route path="/my-payments" 
-             element={
-               <ProtectedRoute>
-                 <PaymentHistory />
-               </ProtectedRoute>
-             } 
-           />
+          <Route path="/my-payments"
+            element={
+              <ProtectedRoute>
+                <PaymentHistory />
+              </ProtectedRoute>
+            }
+          />
 
-           {/* --- NEW ROUTE (Added at end to preserve order) --- */}
-           <Route 
-             path="/notifications" 
-             element={
-               <ProtectedRoute>
-                 <PageLayout>
-                   <Notifications />
-                 </PageLayout>
-               </ProtectedRoute>
-             } 
-           />
-          
+          {/* --- NEW ROUTE (Added at end to preserve order) --- */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <PageLayout>
+                  <Notifications />
+                </PageLayout>
+              </ProtectedRoute>
+            }
+          />
+
         </Routes>
       </Router>
     </SearchProvider>

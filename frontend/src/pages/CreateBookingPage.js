@@ -106,6 +106,8 @@ const CreateBookingPage = () => {
         ? (typeof seats[0] === 'string' ? seats : seats.map(s => `${s.row}${s.number}`))
         : [];
 
+      console.log("CURRENT SHOWTIME ID:", showtimeId);
+
       // Navigate to Payment Checkout Page
       navigate(`/payment/checkout`, {
         state: {
@@ -146,8 +148,8 @@ const CreateBookingPage = () => {
   const rawDate = bookingData.date || showtimeData?.date;
   const formattedDate = (rawDate && !isObjectId(rawDate))
     ? (isNaN(new Date(rawDate).getTime())
-        ? rawDate
-        : new Date(rawDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }))
+      ? rawDate
+      : new Date(rawDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }))
     : "Today";
 
   const unitPrice = bookingData.ticketPrice || (ticketCount > 0 && totalPrice ? Math.round(totalPrice / ticketCount) : (showtimeData?.price || 2000));

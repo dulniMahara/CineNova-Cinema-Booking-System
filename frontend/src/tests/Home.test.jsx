@@ -13,13 +13,20 @@ const mockMovies = [
   { _id: "3", title: "Drama Movie", status: "now", genre: "Drama", duration: 110, rating: 8 },
 ];
 
+import { MemoryRouter } from "react-router-dom";
+
 describe("Home Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getMovies.mockResolvedValue(mockMovies);
   });
 
-  const renderHome = () => render(<Home />);
+  const renderHome = () =>
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>
+    );
 
   test("renders Now Showing and Coming Soon sections", async () => {
     renderHome();

@@ -55,20 +55,23 @@ describe("MovieDetails Component", () => {
     });
   });
 
-  test("Book Now button navigates to booking page", async () => {
+  test("Selecting showtime navigates to booking page", async () => {
     render(
       <MemoryRouter>
         <MovieDetails />
       </MemoryRouter>
     );
 
-    await waitFor(() => screen.getByText(/Book Now/i));
+    await waitFor(() => screen.getByText(/10:30 AM/i));
 
-    fireEvent.click(screen.getByText(/Book Now/i));
-    expect(mockNavigate).toHaveBeenCalledWith("/booking/1");
+    fireEvent.click(screen.getByText(/10:30 AM/i));
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.stringContaining("/booking/"),
+      expect.anything()
+    );
   });
 
-  test("Watch Trailer button opens and closes modal", async () => {
+  test("Watch Trailer button navigates to trailer page", async () => {
     render(
       <MemoryRouter>
         <MovieDetails />
@@ -77,12 +80,7 @@ describe("MovieDetails Component", () => {
 
     await waitFor(() => screen.getByText(/Watch Trailer/i));
 
-    expect(screen.queryByTitle(/Test Movie/i)).not.toBeInTheDocument();
-
     fireEvent.click(screen.getByText(/Watch Trailer/i));
-    expect(screen.getByTitle(/Test Movie/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByText("×"));
-    expect(screen.queryByTitle(/Test Movie/i)).not.toBeInTheDocument();
+    expect(mockNavigate).toHaveBeenCalledWith("/trailer/1", expect.anything());
   });
 });

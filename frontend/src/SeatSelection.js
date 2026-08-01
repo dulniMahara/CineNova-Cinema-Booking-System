@@ -58,6 +58,8 @@ const SeatSelection = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  
+
   // Support both URL patterns: /seats/:showtimeId OR /booking/:id (movieId or showtimeId)
   const targetId = params.showtimeId || params.id;
 

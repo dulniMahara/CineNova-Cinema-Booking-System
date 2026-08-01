@@ -12,12 +12,17 @@ const protect = async (req, res, next) => {
   try {
     const secret = process.env.JWT_SECRET || "secretkey123";
     const decoded = jwt.verify(token, secret);
-    
-    const user = await User.findById(decoded.id).select("-password");
+    console.log("Decoded token:", decoded);
+
+    const user = await
+      User.findById(decoded.id).select("-password");
+    console.log("Searching user ID:", decoded.id);
+    console.log("Found User:", user);
+
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-    
+
     req.userId = decoded.id;
     req.user = user;
     next();
