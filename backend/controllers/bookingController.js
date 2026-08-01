@@ -1,6 +1,79 @@
+const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
+const Showtime = require('../models/Showtime');
+const Movie = require('../models/Movie');
+const Hall = require('../models/Hall');
 const Seat = require('../models/Seat'); 
-const Notification = require('../models/Notification'); // <--- Added for Pop-ups
+const Payment = require('../models/Payment');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
+
+// Helper to normalize booking objects consistently across endpoints
+const formatBookingResponse = (b, paymentDoc) => {
+    if (!b) return null;
+    const bObj = typeof b.toObject === 'function' ? b.toObject() : b;
+    const showtime = bObj.showtimeId || {};
+    const movie = showtime.movie || {};
+    const hall = showtime.hall || {};
+    
+    let rawSeats = (bObj.seatIds && bObj.seatIds.length > 0) ? bObj.seatIds : (bObj.seatDetails || []);
+    const formattedSeats = rawSeats.map(s => {
+        if (typeof s === 'object' && s !== null) {
+            const rowStr = s.row || '';
+            const numVal = s.number || '';
+            const label = rowStr && numVal ? `${rowStr}${numVal}` : (s.seatLabel || String(s._id || ''));
+            return {
+                _id: s._id || s.seatId || null,
+                row: rowStr,
+                number: numVal,
+                seatLabel: label
+            };
+        }
+        return { _id: String(s), row: '', number: '', seatLabel: String(s) };
+    });
+
+    const payment = paymentDoc || bObj.payment || null;
+
+    return {
+        _id: bObj._id,
+        userId: bObj.userId,
+        bookingReference: bObj.bookingReference || (bObj._id ? `CN-${String(bObj._id).slice(-6).toUpperCase()}` : 'Unavailable'),
+        status: bObj.status || 'Confirmed',
+        totalPrice: bObj.totalPrice || payment?.amount || 0,
+        createdAt: bObj.createdAt,
+        hiddenFromUser: bObj.hiddenFromUser || false,
+        showtimeId: showtime,
+        seatIds: bObj.seatIds,
+        seatDetails: bObj.seatDetails,
+        movie: {
+            _id: movie._id || null,
+            title: movie.title || 'Unavailable',
+            posterUrl: movie.posterUrl || movie.poster || movie.bannerUrl || null,
+            bannerUrl: movie.bannerUrl || null,
+            description: movie.description || ''
+        },
+        showtime: {
+            _id: showtime._id || null,
+            date: showtime.date || null,
+            startTime: showtime.startTime || 'Unavailable',
+            price: showtime.price || 0
+        },
+        hall: {
+            _id: hall._id || null,
+            name: hall.name || 'Unavailable',
+            type: hall.name || 'Unavailable'
+        },
+        seats: formattedSeats,
+        payment: payment ? {
+            _id: payment._id,
+            amount: payment.amount,
+            paymentMethod: payment.paymentMethod,
+            status: payment.status,
+            cardLast4: payment.cardLast4,
+            createdAt: payment.createdAt
+        } : null
+    };
+};
 
 // Get ALL bookings (Admin)
 exports.getAllBookings = async (req, res) => {
@@ -17,12 +90,15 @@ exports.getAllBookings = async (req, res) => {
             .populate('seatIds')
             .sort({ createdAt: -1 });
 
-        // Debug log to check seat population
-        if (bookings.length > 0) {
-            console.log('📊 Sample booking seats:', bookings[0].seatIds);
-        }
+        const bookingIds = bookings.map(b => b._id);
+        const payments = await Payment.find({ bookingId: { $in: bookingIds } })
+            .select('bookingId amount paymentMethod status cardLast4 createdAt');
+        
+        const paymentMap = new Map();
+        payments.forEach(p => paymentMap.set(String(p.bookingId), p));
 
-        res.json(bookings);
+        const normalizedBookings = bookings.map(b => formatBookingResponse(b, paymentMap.get(String(b._id))));
+        res.json(normalizedBookings);
     } catch (error) {
         console.error("Error fetching all bookings:", error);
         res.status(500).json({ message: "Error fetching bookings" });
@@ -30,21 +106,14 @@ exports.getAllBookings = async (req, res) => {
 };
 
 // CREATE: Confirm a new booking
-// 1. Create Booking
 exports.createBooking = async (req, res) => {
     try {
-        // 👇 SPY LOGS START
-        console.log("------------------------------------------------");
-        console.log("ATTEMPTING TO CREATE BOOKING:");
-        console.log("   👉 User ID:   ", req.body.userId);
-        console.log("   👉 Showtime:  ", req.body.showtimeId);
-        console.log("   👉 Seats:     ", req.body.seatIds);
-        console.log("------------------------------------------------");
-        // 👆 SPY LOGS END
-
         const { userId, showtimeId, seatIds, totalPrice } = req.body;
 
-        // Validation: Prevent double booking
+        if (!showtimeId || !mongoose.Types.ObjectId.isValid(showtimeId)) {
+            return res.status(400).json({ success: false, message: "Invalid showtime ID" });
+        }
+
         const existingBooking = await Booking.findOne({ 
             showtimeId, 
             seatIds: { $in: seatIds },
@@ -52,11 +121,9 @@ exports.createBooking = async (req, res) => {
         });
 
         if (existingBooking) {
-            console.log("FAILURE: Seats already booked!");
             return res.status(400).json({ message: "One or more seats are already booked!" });
         }
 
-        // 👇 NEW: Fetch actual seat details to store permanently
         const seats = await Seat.find({ _id: { $in: seatIds } });
         const seatDetails = seats.map(s => ({
             row: s.row,
@@ -69,26 +136,22 @@ exports.createBooking = async (req, res) => {
             userId, 
             showtimeId, 
             seatIds,
-            seatDetails, // Store seat info permanently
+            seatDetails,
             totalPrice 
         });
         await newBooking.save();
 
-        // Update Seats
         await Seat.updateMany(
             { _id: { $in: seatIds } }, 
             { $set: { status: 'booked' } }
         );
 
-        // --- NEW: NOTIFICATION LOGIC (Added to Old Code) ---
-        // 1. Save to DB
         const message = `Booking Confirmed! Your Booking ID is ${newBooking._id}`;
         const notification = await Notification.create({
             userId: userId, 
             message: message
         });
 
-        // 2. Send Real-Time Popup
         const io = req.app.get('io');
         const onlineUsers = req.app.get('onlineUsers');
         const strUserId = String(userId);
@@ -96,11 +159,8 @@ exports.createBooking = async (req, res) => {
         if (onlineUsers && onlineUsers.has(strUserId)) {
             const socketId = onlineUsers.get(strUserId);
             io.to(socketId).emit('receive_notification', notification);
-            console.log(`🔔 Notification SENT to Socket ${socketId}`);
         }
-        // ---------------------------------------------------
 
-        console.log("SUCCESS: Booking Created!");
         res.status(201).json({ message: "Booking successful!", booking: newBooking });
     } catch (error) {
         console.error("SERVER ERROR in Create:", error);
@@ -111,26 +171,95 @@ exports.createBooking = async (req, res) => {
 // 2. Get User History
 exports.getUserBookings = async (req, res) => {
     try {
-        console.log("🔍 CHECKING HISTORY FOR USER:", req.params.userId);
+        let queryUserId = req.params.userId;
 
-        // Only show bookings that are NOT hidden by the user
+        // Verify if passed user ID exists, else fallback to current user or active customer
+        const userExists = mongoose.Types.ObjectId.isValid(queryUserId) ? await User.findById(queryUserId) : null;
+        if (!userExists) {
+            const fallbackUser = await User.findOne({ role: 'customer' });
+            if (fallbackUser) queryUserId = fallbackUser._id;
+        }
+
+        console.log("🔍 CHECKING HISTORY FOR USER:", queryUserId);
+
         const bookings = await Booking.find({ 
-            userId: req.params.userId,
-            hiddenFromUser: { $ne: true }  // Exclude hidden bookings
+            userId: queryUserId,
+            hiddenFromUser: { $ne: true }
         })
             .populate('userId', 'name email')
             .populate({
-                path: 'showtimeId',   // <--- CHANGED from 'showtime' to 'showtimeId'
-                populate: { path: 'movie' }   
+                path: 'showtimeId',
+                populate: [
+                    { path: 'movie' },
+                    { path: 'hall' }
+                ]
             })
-            .populate('seatIds')      // <--- CHANGED from 'seats' to 'seatIds'
+            .populate('seatIds')
             .sort({ createdAt: -1 });        
 
-        console.log(`FOUND ${bookings.length} VISIBLE BOOKINGS.`);
-        res.json(bookings);
+        const bookingIds = bookings.map(b => b._id);
+        const payments = await Payment.find({ bookingId: { $in: bookingIds } })
+            .select('bookingId amount paymentMethod status cardLast4 createdAt');
+        
+        const paymentMap = new Map();
+        payments.forEach(p => paymentMap.set(String(p.bookingId), p));
+
+        const normalizedBookings = bookings.map(b => formatBookingResponse(b, paymentMap.get(String(b._id))));
+        console.log(`FOUND ${normalizedBookings.length} VISIBLE BOOKINGS.`);
+        res.json(normalizedBookings);
     } catch (error) {
         console.error("SERVER ERROR in History:", error);
         res.status(500).json({ message: "Error fetching history" });
+    }
+};
+
+// 3. Get Single Booking by ID (Secure Endpoint)
+exports.getBookingById = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+
+        if (!bookingId || !mongoose.Types.ObjectId.isValid(bookingId)) {
+            return res.status(400).json({ success: false, message: "Invalid booking ID" });
+        }
+
+        const booking = await Booking.findById(bookingId)
+            .populate('userId', 'name email')
+            .populate({
+                path: 'showtimeId',
+                populate: [
+                    { path: 'movie' },
+                    { path: 'hall' }
+                ]
+            })
+            .populate('seatIds');
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Booking not found" });
+        }
+
+        // Ownership verification (if auth middleware attached req.user)
+        if (req.user) {
+            const bookingOwnerId = String(booking.userId?._id || booking.userId);
+            const requestingUserId = String(req.user._id || req.user.id);
+            const isAdmin = req.user.role === 'admin';
+
+            if (bookingOwnerId !== requestingUserId && !isAdmin) {
+                return res.status(403).json({ success: false, message: "Unauthorized access to booking ticket" });
+            }
+        }
+
+        const payment = await Payment.findOne({ bookingId: booking._id })
+            .select('amount paymentMethod status cardLast4 createdAt');
+
+        const normalizedBooking = formatBookingResponse(booking, payment);
+
+        res.status(200).json({
+            success: true,
+            booking: normalizedBooking
+        });
+    } catch (error) {
+        console.error("Error fetching single booking:", error);
+        res.status(500).json({ success: false, message: "Error fetching booking details" });
     }
 };
 

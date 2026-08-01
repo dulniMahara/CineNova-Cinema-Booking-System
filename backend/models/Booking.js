@@ -40,7 +40,7 @@ const bookingSchema = new mongoose.Schema({
   bookingReference: { 
     type: String, 
     unique: true, 
-    default: () => Math.random().toString(36).substring(2, 10).toUpperCase() 
+    default: () => `CN-${Math.floor(100000 + Math.random() * 900000)}`
   },
   createdAt: { type: Date, default: Date.now }
 });

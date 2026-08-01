@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import axios from 'axios';
 import {
   FiFilm,
   FiCheckCircle,
@@ -44,7 +45,7 @@ const generateQRCodeMatrix = (text) => {
 
   // Hash based matrix fill for data cells
   let hash = 0;
-  const str = String(text || 'CineNovaBookingRef');
+  const str = String(text || 'CineNovaTicketRef');
   for (let i = 0; i < str.length; i++) {
     hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0;
@@ -99,37 +100,144 @@ const DigitalQRCode = ({ value }) => {
 const BookingSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { bookingId } = useParams();
   const state = location.state || {};
 
+  const [bookingData, setBookingData] = useState(state.booking || null);
+  const [loading, setLoading] = useState(!state.booking && !!(bookingId || state.bookingRef || state.bookingId));
+  const [fetchError, setFetchError] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Status check
-  const rawStatus = state.status || state.bookingStatus || 'Confirmed';
+  const targetBookingId = bookingId || state.bookingRef || state.bookingId || state.booking?._id;
+  const isObjectId = (val) => typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [bookingId]);
+
+  useEffect(() => {
+    const fetchBookingDetails = async () => {
+      if (!targetBookingId || !isObjectId(targetBookingId)) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/bookings/${targetBookingId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+
+        if (res.data?.booking) {
+          setBookingData(res.data.booking);
+        } else if (res.data) {
+          setBookingData(res.data);
+        }
+      } catch (err) {
+        console.error("Error fetching ticket booking:", err);
+        setFetchError(
+          err.response?.data?.message ||
+          (err.response?.status === 403 ? "Unauthorized access to ticket" : "Failed to load booking ticket details")
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!bookingData || isObjectId(targetBookingId)) {
+      fetchBookingDetails();
+    }
+  }, [targetBookingId]);
+
+  if (loading) {
+    return (
+      <div className="booking-success-wrapper">
+        <div className="success-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div className="spinner-ring" style={{ margin: '0 auto 20px auto' }}></div>
+          <h2 style={{ color: '#ffffff' }}>Loading Digital Ticket Pass...</h2>
+          <p style={{ color: '#94a3b8' }}>Verifying booking details from database...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError && !bookingData) {
+    return (
+      <div className="booking-success-wrapper">
+        <div className="success-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div className="hero-icon-container cancelled-icon-container" style={{ margin: '0 auto 20px auto' }}>
+            <FiXCircle className="hero-cancelled-icon" />
+          </div>
+          <h2 style={{ color: '#ffffff', marginBottom: '10px' }}>Ticket Unavailable</h2>
+          <p style={{ color: '#FCA5A5', marginBottom: '24px' }}>{fetchError}</p>
+          <button className="btn-primary-view" onClick={() => navigate('/my-bookings')}>
+            <FiBookmark /> Return to My Tickets
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Derive active values safely from bookingData or location state
+  const activeBooking = bookingData || {};
+  const movieObj = activeBooking.movie || activeBooking.showtimeId?.movie || {};
+  const showtimeObj = activeBooking.showtime || activeBooking.showtimeId || {};
+  const hallObj = activeBooking.hall || showtimeObj.hall || {};
+  const paymentObj = activeBooking.payment || {};
+
+  const rawStatus = activeBooking.status || state.status || 'Confirmed';
   const isCancelled = String(rawStatus).toLowerCase() === 'cancelled';
 
-  // Extract booking details safely from navigation state or provide clean realistic fallback
-  const rawRef = state.bookingRef || state.bookingId || state._id;
-  const bookingRef = rawRef ? String(rawRef) : `CN-${Math.floor(100000 + Math.random() * 900000)}`;
+  // Booking reference
+  const bookingRef = activeBooking.bookingReference || (activeBooking._id ? `CN-${activeBooking._id.slice(-6).toUpperCase()}` : (state.bookingRef || "Unavailable"));
 
-  const movieTitle = state.movieTitle || state.title || 'Avatar: Fire and Ash';
-  const showtime = state.showtime || state.time || 'Today, 08:30 PM';
-  const hall = state.hall || state.screen || 'Hall 01 - VIP Screen';
+  // Movie title & poster
+  const movieTitle = movieObj.title || activeBooking.movieTitle || state.movieTitle || "Unavailable";
 
-  // Format seats
-  const rawSeats = state.selectedSeats || state.seats;
-  const seatList = Array.isArray(rawSeats)
-    ? (typeof rawSeats[0] === 'string'
-      ? rawSeats
-      : rawSeats.map(s => `${s.row}${s.number}`))
-    : (typeof rawSeats === 'string' ? rawSeats.split(',').map(s => s.trim()) : ['F7', 'F8']);
+  const getPosterUrl = () => {
+    const url = movieObj.posterUrl || movieObj.poster || movieObj.bannerUrl || activeBooking.moviePoster || state.posterUrl;
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+    if (url.startsWith('/')) {
+      const baseUrl = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/, '') : '';
+      return `${baseUrl}${url}`;
+    }
+    return url;
+  };
+  const posterUrl = getPosterUrl();
 
-  const paymentMethod = state.paymentMethod || 'Credit Card';
+  // Date & Time formatting
+  const dateVal = showtimeObj.date;
+  const dateObj = dateVal ? new Date(dateVal) : null;
+  const formattedDayStr = dateObj && !isNaN(dateObj.getTime())
+    ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    : (state.showtime ? state.showtime.split('•')[0] : "Unavailable");
+  const timeStr = showtimeObj.startTime || (state.showtime && state.showtime.includes('•') ? state.showtime.split('•')[1] : "Unavailable");
+  const showtimeDisplay = dateObj && timeStr !== "Unavailable" ? `${formattedDayStr} • ${timeStr}` : formattedDayStr;
 
-  // Currency formatting: Rs. XXXX (NO dollar symbols!)
-  const rawAmount = state.amount || state.totalPrice || state.displayPrice || 3200;
-  const formattedAmount = typeof rawAmount === 'number'
+  // Hall & Seats
+  const hallName = hallObj.name || state.hall || "Unavailable";
+
+  const rawSeats = activeBooking.seats || activeBooking.seatIds || activeBooking.seatDetails || state.selectedSeats || state.seats;
+  const seatList = Array.isArray(rawSeats) && rawSeats.length > 0
+    ? rawSeats.map(s => {
+        if (typeof s === 'object' && s !== null) {
+          return s.seatLabel || (s.row && s.number ? `${s.row}${s.number}` : String(s._id || ''));
+        }
+        return String(s);
+      })
+    : (typeof rawSeats === 'string' ? rawSeats.split(',').map(s => s.trim()) : ["Unavailable"]);
+
+  // Payment
+  const paymentMethod = paymentObj.paymentMethod || state.paymentMethod || activeBooking.paymentMethod || "Credit Card";
+  const rawAmount = activeBooking.totalPrice || paymentObj.amount || state.amount || state.totalPrice || 0;
+  const formattedAmount = typeof rawAmount === 'number' && rawAmount > 0
     ? rawAmount.toLocaleString('en-IN')
-    : rawAmount;
+    : (rawAmount || "Unavailable");
+
+  // Dynamic QR Code payload
+  const qrPayload = `${window.location.origin}/booking-success/${activeBooking._id || targetBookingId || bookingRef}`;
 
   const handleViewTicket = () => {
     setToastMessage('Digital Pass saved! Present your QR code at the cinema entrance.');
@@ -186,12 +294,21 @@ const BookingSuccess = () => {
             </div>
 
             {/* Movie Title & Status Banner */}
-            <div className="ticket-movie-section">
-              <h2 className="movie-title-large">{movieTitle}</h2>
-              <div className="movie-meta-row">
-                <span className="cancelled-status-badge">
-                  <FiXCircle /> CANCELLED
-                </span>
+            <div className="ticket-movie-section" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              {posterUrl && (
+                <img
+                  src={posterUrl}
+                  alt={movieTitle}
+                  style={{ width: '60px', height: '85px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+                />
+              )}
+              <div>
+                <h2 className="movie-title-large">{movieTitle}</h2>
+                <div className="movie-meta-row">
+                  <span className="cancelled-status-badge">
+                    <FiXCircle /> CANCELLED
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -200,21 +317,21 @@ const BookingSuccess = () => {
 
               <div className="detail-block">
                 <span className="detail-label">Booking Reference</span>
-                <span className="detail-value booking-ref-code cancelled-ref">#{bookingRef}</span>
+                <span className="detail-value booking-ref-code cancelled-ref">{bookingRef.startsWith('#') ? bookingRef : `#${bookingRef}`}</span>
               </div>
 
               <div className="detail-block">
                 <span className="detail-label">
                   <FiCalendar /> Showtime
                 </span>
-                <span className="detail-value">{showtime}</span>
+                <span className="detail-value">{showtimeDisplay}</span>
               </div>
 
               <div className="detail-block">
                 <span className="detail-label">
                   <FiTv /> Hall
                 </span>
-                <span className="detail-value">{hall}</span>
+                <span className="detail-value">{hallName}</span>
               </div>
 
               <div className="detail-block">
@@ -316,15 +433,24 @@ const BookingSuccess = () => {
             <span className="vip-pass-tag">VIP DIGITAL PASS</span>
           </div>
 
-          {/* Movie Banner */}
-          <div className="ticket-movie-section">
-            <h2 className="movie-title-large">{movieTitle}</h2>
-            <div className="movie-meta-row">
-              <span className="movie-format-pill">4K ULTRA HD</span>
-              <span>•</span>
-              <span>DOLBY ATMOS</span>
-              <span>•</span>
-              <span>PREMIUM SCREEN</span>
+          {/* Movie Banner Header */}
+          <div className="ticket-movie-section" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            {posterUrl && (
+              <img
+                src={posterUrl}
+                alt={movieTitle}
+                style={{ width: '75px', height: '105px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(212, 175, 55, 0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}
+              />
+            )}
+            <div>
+              <h2 className="movie-title-large">{movieTitle}</h2>
+              <div className="movie-meta-row">
+                <span className="movie-format-pill">{hallName !== "Unavailable" ? hallName : "CINENOVA DIGITAL"}</span>
+                <span>•</span>
+                <span>DOLBY ATMOS</span>
+                <span>•</span>
+                <span>PREMIUM SCREEN</span>
+              </div>
             </div>
           </div>
 
@@ -333,21 +459,21 @@ const BookingSuccess = () => {
 
             <div className="detail-block">
               <span className="detail-label">Booking Reference</span>
-              <span className="detail-value booking-ref-code">#{bookingRef}</span>
+              <span className="detail-value booking-ref-code">{bookingRef.startsWith('#') ? bookingRef : `#${bookingRef}`}</span>
             </div>
 
             <div className="detail-block">
               <span className="detail-label">
                 <FiCalendar /> Showtime
               </span>
-              <span className="detail-value">{showtime}</span>
+              <span className="detail-value">{showtimeDisplay}</span>
             </div>
 
             <div className="detail-block">
               <span className="detail-label">
                 <FiTv /> Hall
               </span>
-              <span className="detail-value">{hall}</span>
+              <span className="detail-value">{hallName}</span>
             </div>
 
             <div className="detail-block">
@@ -372,7 +498,9 @@ const BookingSuccess = () => {
 
             <div className="detail-block">
               <span className="detail-label">Amount Paid</span>
-              <span className="detail-value amount-highlight">Rs. {formattedAmount}</span>
+              <span className="detail-value amount-highlight">
+                {formattedAmount !== "Unavailable" ? `Rs. ${formattedAmount}` : "Unavailable"}
+              </span>
             </div>
 
           </div>
@@ -384,11 +512,14 @@ const BookingSuccess = () => {
             <div className="notch-right" />
           </div>
 
-          {/* 3. QR Code Section */}
+          {/* 3. Dynamic QR Code Section */}
           <div className="qr-section">
-            <DigitalQRCode value={bookingRef} />
+            <DigitalQRCode value={qrPayload} />
             <p className="qr-instruction">Scan this QR code at cinema entrance</p>
             <p className="qr-subnote">Present this digital pass at the entrance gate for automated verification.</p>
+            <span style={{ display: 'block', marginTop: '8px', fontSize: '0.78rem', color: '#D4AF37', fontWeight: '700' }}>
+              Ref: {bookingRef}
+            </span>
           </div>
 
         </div>
@@ -401,7 +532,7 @@ const BookingSuccess = () => {
               className="btn-primary-view"
               onClick={handleViewTicket}
             >
-              <FiTag /> View Ticket
+              <FiTag /> Save / Print Pass
             </button>
 
             <button

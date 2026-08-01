@@ -118,7 +118,7 @@ const MyBookingsPage = () => {
           {/* Header Section */}
           <div className="wallet-header">
             <div className="wallet-title-group">
-              <h1 className="wallet-main-title">My Tickets</h1>
+              <h1 className="wallet-main-title">My Bookings</h1>
               <p className="wallet-subtitle">
                 Your upcoming and past cinema experiences
               </p>
@@ -164,7 +164,8 @@ const MyBookingsPage = () => {
             ) : (
               /* User Cinema Wallet Pass Cards */
               history.map(b => {
-                const isCancelled = b.status === 'Cancelled';
+                const isCancelled = String(b.status).toLowerCase() === 'cancelled';
+
                 const getPosterUrl = (booking) => {
                   const m = booking?.showtimeId?.movie || booking?.movie || {};
                   const url = m.posterUrl || m.poster || m.bannerUrl || booking?.moviePoster || booking?.posterUrl;
@@ -173,27 +174,32 @@ const MyBookingsPage = () => {
                     return url;
                   }
                   if (url.startsWith('/')) {
-                    return `${process.env.REACT_APP_API_URL || ''}${url}`;
+                    const baseUrl = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace(/\/api\/?$/, '') : '';
+                    return `${baseUrl}${url}`;
                   }
                   return url;
                 };
 
-                const posterUrl = getPosterUrl(b);
-                const movieTitle = b.showtimeId?.movie?.title || b.movieTitle || "Cinema Movie Pass";
-                const refCode = b._id ? b._id.slice(-6).toUpperCase() : 'TICKET';
+                const posterUrl = b.movie?.posterUrl || b.showtimeId?.movie?.posterUrl || getPosterUrl(b);
+                const movieTitle = b.movie?.title || b.showtimeId?.movie?.title || b.movieTitle || "Unavailable";
+                const refCode = b.bookingReference || (b._id ? `CN-${b._id.slice(-6).toUpperCase()}` : 'Unavailable');
 
-                // Format Date & Time cleanly (e.g. Saturday • 7:30 PM)
-                const dateObj = b.showtimeId?.date ? new Date(b.showtimeId.date) : null;
-                const formattedDayStr = dateObj
-                  ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                  : "Date N/A";
-                const timeStr = b.showtimeId?.startTime || "7:30 PM";
-                const dateTimeDisplay = `${formattedDayStr} • ${timeStr}`;
+                // Format Date & Time cleanly
+                const dateVal = b.showtime?.date || b.showtimeId?.date;
+                const dateObj = dateVal ? new Date(dateVal) : null;
+                const formattedDayStr = dateObj && !isNaN(dateObj.getTime())
+                  ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+                  : "Unavailable";
+                const timeStr = b.showtime?.startTime || b.showtimeId?.startTime || "Unavailable";
+                const hallName = b.hall?.name || b.showtimeId?.hall?.name || "Unavailable";
+                const dateTimeDisplay = dateObj && timeStr !== "Unavailable" ? `${formattedDayStr} • ${timeStr}` : formattedDayStr;
 
-                const seatStr = renderSeats(b.seatIds);
+                const seatsArray = (Array.isArray(b.seats) && b.seats.length > 0)
+                  ? b.seats.map(s => s.seatLabel || `${s.row}${s.number}`)
+                  : (b.seatIds || b.seatDetails);
+                const seatStr = renderSeats(seatsArray);
 
-                // Format currency: Rs. XXXX (NO DOLLAR SYMBOLS)
-                const rawAmount = b.totalPrice || 0;
+                const rawAmount = b.totalPrice || b.payment?.amount || 0;
                 const formattedAmount = typeof rawAmount === 'number'
                   ? rawAmount.toLocaleString('en-IN')
                   : rawAmount;
@@ -206,18 +212,19 @@ const MyBookingsPage = () => {
 
                     {/* Visual Poster Frame */}
                     <div className="card-poster-side">
-                      {posterUrl && (
+                      {posterUrl ? (
                         <img
                           src={posterUrl}
                           alt={movieTitle}
                           className="card-poster-img"
+                          style={{ objectFit: 'cover' }}
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const fallback = e.currentTarget.parentElement.querySelector('.poster-fallback');
                             if (fallback) fallback.style.display = 'flex';
                           }}
                         />
-                      )}
+                      ) : null}
                       <div
                         className="poster-fallback"
                         style={{ display: posterUrl ? 'none' : 'flex' }}
@@ -234,12 +241,17 @@ const MyBookingsPage = () => {
                         <div className="card-datetime-row">
                           <FiCalendar /> <span>{dateTimeDisplay}</span>
                         </div>
+                        {hallName !== "Unavailable" && (
+                          <div className="card-datetime-row" style={{ marginTop: '4px', fontSize: '0.82rem', color: '#94a3b8' }}>
+                            <span>Hall: {hallName}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="card-details-row">
                         <span className="detail-pill">Seats: {seatStr}</span>
                         <span className="detail-amount">Rs. {formattedAmount}</span>
-                        <span className="card-ref-code">#{refCode}</span>
+                        <span className="card-ref-code">{refCode.startsWith('#') ? refCode : `#${refCode}`}</span>
                       </div>
                     </div>
 
@@ -253,14 +265,9 @@ const MyBookingsPage = () => {
                       <div className="card-actions-group">
                         <button
                           className="btn-view-pass"
-                          onClick={() => navigate('/booking-success', {
+                          onClick={() => navigate(`/booking-success/${b._id}`, {
                             state: {
-                              bookingRef: b._id,
-                              movieTitle: movieTitle,
-                              showtime: dateTimeDisplay,
-                              seats: seatStr,
-                              totalPrice: rawAmount,
-                              status: b.status || (isCancelled ? 'Cancelled' : 'Confirmed')
+                              booking: b
                             }
                           })}
                         >
