@@ -1,256 +1,921 @@
-/* Main Layout - Dark Background */
-.payment-history-container {
-    padding: 40px;
-    background-color: #0b0f19; 
-    min-height: 100vh;
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    gap: 30px;
+/* CineNova - Luxury Payment History Dashboard */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+.my-tickets-wallet-page {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #090a0f;
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(16, 185, 129, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+  color: #ffffff;
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 40px 24px 80px 24px;
+  box-sizing: border-box;
+  animation: walletFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* --- LEFT SIDEBAR (The Orange Outlined Box) --- */
-.history-sidebar {
-    flex: 0 0 320px; /* Fixed width */
+@keyframes walletFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.summary-card {
-    background-color: #111827; /* Dark Gray Background */
-    padding: 40px 30px;
-    border-radius: 20px;
-    
-    /* THE ORANGE GLOW BORDER */
-    border: 1px solid #ff3d00;
-    box-shadow: 0 0 20px rgba(255, 61, 0, 0.15);
-    
-    text-align: center;
-    position: sticky;
-    top: 100px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.wallet-container {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.history-title {
-    color: #ff3d00; /* Orange Text */
-    font-size: 2.5rem;
-    font-weight: 900;
-    margin: 0;
-    line-height: 1.1;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+/* Header Section */
+.wallet-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.history-subtitle {
-    color: #9ca3af;
-    font-size: 0.95rem;
-    margin-bottom: 20px;
+.wallet-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* WHITE BUTTONS (Like in your screenshot) */
-.sidebar-btn {
-    background-color: white;
-    color: black;
-    border: none;
-    padding: 12px 0;
-    border-radius: 50px; /* Fully rounded */
-    font-weight: 800;
-    font-size: 0.9rem;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: transform 0.2s;
+.wallet-main-title {
+  font-size: 2.6rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  margin: 0;
+  background: linear-gradient(135deg, #ffffff 30%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.wallet-subtitle {
+  font-size: 1.05rem;
+  color: #94a3b8;
+  margin: 0;
+  font-weight: 400;
+}
+
+.header-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-book-another {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #090a0f;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-book-another:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-clear-history-subtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.btn-clear-history-subtle:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* 2. Summary Overview Cards Grid */
+.payments-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.summary-metric-card {
+  background: rgba(18, 21, 31, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.summary-metric-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(16, 185, 129, 0.12);
+}
+
+.metric-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.metric-icon-box.gold {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.metric-icon-box.green {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.metric-icon-box.emerald {
+  background: rgba(5, 150, 105, 0.15);
+  border: 1px solid rgba(5, 150, 105, 0.35);
+  color: #6ee7b7;
+}
+
+.metric-icon-box.amber {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+}
+
+.metric-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 2px;
+}
+
+.metric-value.amount {
+  color: #fbbf24;
+}
+
+/* 3. Toolbar (Search, Filter, Sort) */
+.payments-toolbar {
+  background: rgba(18, 21, 31, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.search-input-box {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.toolbar-search-input {
+  width: 100%;
+  padding: 10px 38px 10px 42px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 30px;
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.92rem;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.toolbar-search-input:focus {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.control-icon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+  font-size: 0.95rem;
+}
+
+.toolbar-select {
+  padding: 10px 16px 10px 36px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 30px;
+  color: #f8fafc;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.toolbar-select:focus {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+/* 4. Payments Cards List */
+.payments-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.payment-history-card {
+  background: rgba(18, 21, 31, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 22px 24px;
+  display: grid;
+  grid-template-columns: 120px 1fr 240px;
+  gap: 24px;
+  align-items: center;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+
+.payment-history-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.12);
+}
+
+/* Left: Poster */
+.card-poster-wrapper {
+  width: 120px;
+  height: 155px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.payment-history-card:hover .poster-img {
+  transform: scale(1.06);
+}
+
+.poster-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #fbbf24;
+  font-size: 1.8rem;
+}
+
+.poster-fallback span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #fbbf24;
+}
+
+/* Middle: Details */
+.card-details-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-movie-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.ref-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ref-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.ref-badge.booking {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.ref-badge.txn {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+}
+
+.meta-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: #cbd5e1;
+}
+
+.meta-icon {
+  color: #fbbf24;
+  font-size: 0.98rem;
+  flex-shrink: 0;
+}
+
+/* Right: Amount & Actions */
+.card-actions-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 20px;
+}
+
+.amount-status-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.card-amount {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #fbbf24;
+  text-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+}
+
+/* Status Badges */
+.payment-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.payment-status-tag.tag-completed {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.payment-status-tag.tag-pending {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.payment-status-tag.tag-failed {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.payment-status-tag.tag-refunded {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+.card-buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-view-receipt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #090a0f;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+  width: 100%;
+}
+
+.btn-view-receipt:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-view-ticket-subtle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  padding: 9px 18px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+}
+
+.btn-view-ticket-subtle:hover {
+  background: rgba(51, 65, 85, 0.9);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+/* 5. Skeleton Loading */
+.skeleton-card {
+  height: 160px;
+  pointer-events: none;
+  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(90deg, rgba(18, 21, 31, 0.7) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(18, 21, 31, 0.7) 100%);
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-poster {
+  width: 120px;
+  height: 155px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  grid-column: 2 / -1;
+}
+
+.skeleton-line {
+  height: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.skeleton-line.title {
+  width: 40%;
+  height: 22px;
+}
+
+.skeleton-line.text {
+  width: 70%;
+}
+
+.skeleton-line.text.short {
+  width: 35%;
+}
+
+/* 6. Empty & Error Cards */
+.empty-payments-card,
+.payments-error-card {
+  background: rgba(18, 21, 31, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 60px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+
+.empty-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.empty-desc {
+  color: #94a3b8;
+  font-size: 0.98rem;
+  max-width: 420px;
+  margin: 0 0 24px 0;
+}
+
+.payments-error-card {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.error-icon {
+  font-size: 3rem;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 11px 22px;
+  border-radius: 30px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 7. Receipt Modal */
+.receipt-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.receipt-glass-modal {
+  background: #0f172a;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  background: #020617;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fbbf24;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.btn-close-modal {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+  color: #ffffff;
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.receipt-amount-banner {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.banner-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #34d399;
+  letter-spacing: 0.5px;
+}
+
+.banner-amount {
+  display: block;
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 4px;
+}
+
+.receipt-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.receipt-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.receipt-detail-item .r-label {
+  color: #94a3b8;
+}
+
+.receipt-detail-item .r-val {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.receipt-detail-item .r-val.highlight-gold {
+  color: #fbbf24;
+}
+
+.receipt-detail-item .r-val.monospace {
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+.receipt-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-print-receipt {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #090a0f;
+  border: none;
+  padding: 12px;
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-ticket-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  padding: 11px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .payments-overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .payment-history-card {
+    grid-template-columns: 110px 1fr;
+  }
+
+  .card-actions-wrapper {
+    grid-column: 1 / -1;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-left: 0;
+    padding-top: 16px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
+  }
+
+  .card-buttons-group {
+    flex-direction: row;
+    width: auto;
+  }
 }
 
-.sidebar-btn:hover {
-    transform: scale(1.02);
-    background-color: #f3f4f6;
-}
+@media (max-width: 640px) {
+  .my-tickets-wallet-page {
+    padding: 24px 16px 60px 16px;
+  }
 
-.sidebar-btn.secondary {
-    background-color: #e5e7eb; /* Slightly darker white/gray */
-    color: #ef4444; /* Red Text for 'Clear History' style */
-}
+  .payments-overview-grid {
+    grid-template-columns: 1fr;
+  }
 
-/* --- RIGHT SIDE: GRID --- */
-.history-grid {
+  .wallet-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-buttons-row {
+    width: 100%;
+  }
+
+  .btn-book-another,
+  .btn-clear-history-subtle {
     flex: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    align-content: start;      
-    grid-auto-rows: min-content;
-}
+    justify-content: center;
+  }
 
-/* PAYMENT CARD */
-.payment-card {
-    background-color: #111827; /* Dark Card */
-    border-radius: 16px;
-    padding: 25px;
-    border: 1px solid #1f2937;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: 0.2s;
-}
+  .payment-history-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 
-.payment-card:hover {
-    border-color: #374151;
-}
-
-/* YELLOW REF HEADER */
-.card-header-ref {
-    color: #fbbf24; /* Yellow/Orange */
-    font-weight: 800;
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* INFO ROWS */
-.card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
-    align-items: center;
-}
-
-.info-label { 
-    color: #9ca3af; /* Gray Label */
-}
-
-.info-value { 
-    color: white; 
-    font-weight: 600; 
-}
-
-/* Green Amount & Status */
-.val-green { color: #34d399; }
-
-/* RED OUTLINE BUTTON (Matches 'Cancel Ticket') */
-.card-btn-outline {
-    background: transparent;
-    border: 1px solid #ef4444; /* Red Border */
-    color: #ef4444;            /* Red Text */
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    align-self: flex-end; /* Pushes to right */
-    transition: 0.2s;
-}
-
-.card-btn-outline:hover {
-    background-color: #ef4444;
-    color: white;
-}
-/* --- RECEIPT POPUP MODAL --- */
-.receipt-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
+  .card-poster-wrapper {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85); /* Very dark background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    backdrop-filter: blur(5px);
-}
+    height: 180px;
+  }
 
-.receipt-modal {
-    background-color: #1f2937; /* Dark Gray Card */
-    width: 450px;
-    border-radius: 16px;
-    border: 1px solid #374151;
-    overflow: hidden;
-    animation: slideUp 0.3s ease-out;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
+  .meta-info-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.receipt-header {
-    background-color: #111827; /* Darker Header */
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #ff3d00; /* Orange Accent Line */
-}
-
-.receipt-header h2 {
-    margin: 0;
-    color: white;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.close-receipt-btn {
-    background: #374151;
-    border: none;
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-}
-
-.close-receipt-btn:hover {
-    background-color: #ef4444; /* Red on hover */
-}
-
-.receipt-body {
-    padding: 30px;
-    display: flex;
+  .card-actions-wrapper {
     flex-direction: column;
-    gap: 15px;
-}
+    align-items: stretch;
+    gap: 14px;
+  }
 
-.receipt-row {
-    display: flex;
+  .amount-status-block {
+    align-items: flex-start;
+    flex-direction: row;
     justify-content: space-between;
-    border-bottom: 1px dashed #374151;
-    padding-bottom: 8px;
+  }
+
+  .card-buttons-group {
+    flex-direction: column;
+    width: 100%;
+  }
 }
-
-.receipt-row:last-child {
-    border-bottom: none;
-}
-
-.r-label { color: #9ca3af; font-size: 0.9rem; }
-.r-value { color: white; font-weight: 600; text-align: right; }
-
-.receipt-total {
-    margin-top: 20px;
-    background-color: #064e3b; /* Green Background */
-    padding: 15px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.total-label { color: #6ee7b7; font-weight: bold; }
-.total-amount { color: white; font-weight: 900; font-size: 1.2rem; }
