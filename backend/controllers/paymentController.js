@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking'); 
 const Showtime = require('../models/Showtime'); // <--- 1. IMPORT SHOWTIME MODEL
@@ -10,17 +11,25 @@ const Notification = require('../models/Notification'); // <--- Ensure this is i
 // @access  Private
 exports.processPayment = async (req, res) => {
     try {
-        console.log("1. Payment Request Received:", req.body);
-
         let { bookingId, showtimeId, seats, amount, paymentMethod, cardLast4 } = req.body;
+        console.log("1. Payment Request Received:", { showtimeId, seatsCount: seats?.length, amount, paymentMethod, cardLast4: cardLast4 || '0000' });
 
         // --- SCENARIO A: Creating a New Booking (The "Member 7" Way) ---
         if (!bookingId) {
             console.log("2. Creating new booking...");
             
-            // Validate
-            if (!showtimeId || !seats || seats.length === 0) {
-                return res.status(400).json({ message: "Missing booking details (showtimeId or seats)." });
+            // Validate showtimeId
+            if (!showtimeId || !mongoose.Types.ObjectId.isValid(showtimeId)) {
+                return res.status(400).json({ success: false, message: "Invalid showtime ID" });
+            }
+
+            if (!seats || !Array.isArray(seats) || seats.length === 0) {
+                return res.status(400).json({ success: false, message: "Missing booking details (seats)." });
+            }
+
+            const invalidSeatId = seats.find(id => !mongoose.Types.ObjectId.isValid(id));
+            if (invalidSeatId) {
+                return res.status(400).json({ success: false, message: "Invalid seat ID provided" });
             }
 
             // Fetch actual seat details to store permanently
@@ -46,12 +55,15 @@ exports.processPayment = async (req, res) => {
             bookingId = savedBooking._id; 
             console.log("3. New Booking Created:", bookingId);
 
-            // B. CRITICAL: Update the Showtime to mark seats as "Booked"
-             // This prevents other people from booking the same seats!
+            // B. CRITICAL: Update the Showtime and Seats to mark as "Booked"
             await Showtime.findByIdAndUpdate(showtimeId, {
                 $push: { bookedSeats: { $each: seats } } 
             });
-            console.log("4. Seats marked as booked in Showtime:", seats);
+            await Seat.updateMany(
+                { _id: { $in: seats } },
+                { $set: { status: 'booked' } }
+            );
+            console.log("4. Seats marked as booked in Showtime and Seat collection:", seats);
         }
 
         // --- SCENARIO B: Processing the Payment ---
@@ -318,6 +330,9 @@ exports.processPayment = async (req, res) => {
 
         res.status(201).json({ 
             success: true,
+            bookingId: fullBooking ? fullBooking._id : bookingId,
+            bookingReference: fullBooking ? fullBooking.bookingReference : undefined,
+            paymentId: createdPayment._id,
             payment: createdPayment, 
             booking: fullBooking 
         });
@@ -331,16 +346,24 @@ exports.processPayment = async (req, res) => {
 // --- KEEP OTHER FUNCTIONS ---
 exports.getMyPayments = async (req, res) => {
     try {
-        const payments = await Payment.find({ userId: req.user.id }).sort({ createdAt: -1 })
+        const userId = req.user._id || req.user.id || req.userId;
+        const payments = await Payment.find({ userId }).sort({ createdAt: -1 })
             .populate({
                 path: 'bookingId',
-                populate: {
-                    path: 'showtimeId',
-                    populate: { path: 'movie', select: 'title' }
-                }
+                populate: [
+                    {
+                        path: 'showtimeId',
+                        populate: [
+                            { path: 'movie' },
+                            { path: 'hall' }
+                        ]
+                    },
+                    { path: 'seatIds' }
+                ]
             });
         res.status(200).json(payments);
     } catch (error) {
+        console.error("Error fetching my payments:", error);
         res.status(500).json({ message: 'Error fetching payments' });
     }
 };

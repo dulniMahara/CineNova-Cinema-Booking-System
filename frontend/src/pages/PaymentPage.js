@@ -1,12 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiArrowLeft, FiShield, FiCreditCard, FiLock } from 'react-icons/fi';
+import { FiArrowLeft, FiShield } from 'react-icons/fi';
 import axios from 'axios';
+import {
+  validateSriLankanPhone,
+  validateCardNumber,
+  validateCardholderName,
+  validateExpiryDate,
+  validateCVV
+} from '../utils/validation';
 import './Payment.css';
 
 const PaymentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Field refs for focus-on-error behavior
+  const cardNameRef = useRef(null);
+  const cardNumberRef = useRef(null);
+  const expiryRef = useRef(null);
+  const cvvRef = useRef(null);
+  const bankRef = useRef(null);
+  const mobileNumberRef = useRef(null);
 
   // Get data passed from previous page
   const {
@@ -20,9 +35,6 @@ const PaymentPage = () => {
     ticketPrice,
     paymentMethod
   } = location.state || {};
-
-  console.log("PAYMENT PAGE RECEIVED SHOWTIME ID:", showtimeId);
-  console.log("PAYMENT PAGE STATE:", location.state);
 
   const isObjectId = (str) => typeof str === 'string' && /^[0-9a-fA-F]{24}$/.test(str);
 
@@ -45,9 +57,18 @@ const PaymentPage = () => {
     mobileNumber: ""
   });
 
+  const [fieldErrors, setFieldErrors] = useState({
+    cardName: '',
+    cardNumber: '',
+    expiry: '',
+    cvv: '',
+    bank: '',
+    mobileNumber: ''
+  });
+
   useEffect(() => {
-    if (!showtimeId || !selectedSeats) {
-      setError("Missing booking details. Please return to seat selection.");
+    if (!showtimeId || !isObjectId(showtimeId) || !selectedSeats || selectedSeats.length === 0) {
+      setError("Missing or invalid booking details. Please return to seat selection.");
       return;
     }
 
@@ -57,7 +78,7 @@ const PaymentPage = () => {
       if (isStringArray) {
         try {
           const res = await axios.get(`${process.env.REACT_APP_API_URL}/seats/${showtimeId}`);
-          const allSeats = res.data;
+          const allSeats = Array.isArray(res.data) ? res.data : (res.data?.data || []);
 
           const realSeatObjects = selectedSeats.map(seatName => {
             const match = seatName.match(/([A-Z]+)(\d+)/);
@@ -71,30 +92,182 @@ const PaymentPage = () => {
             );
           }).filter(Boolean);
 
-          setFinalSeats(realSeatObjects);
+          if (realSeatObjects.length === 0) {
+            setError("Could not verify selected seats for this showtime.");
+          } else {
+            setFinalSeats(realSeatObjects);
+          }
 
         } catch (err) {
           console.error("Could not fetch seat IDs:", err.response?.data || err);
 
           setError(
+            err.response?.data?.message ||
             err.response?.data?.error ||
             "System error: Could not verify seat IDs."
           );
         }
       } else {
-        setFinalSeats(selectedSeats);
+        const validObjects = selectedSeats.filter(s => s && s._id && isObjectId(s._id));
+        if (validObjects.length === 0) {
+          setError("Selected seats have invalid identifiers. Please re-select seats.");
+        } else {
+          setFinalSeats(validObjects);
+        }
       }
     };
 
     fixSeatIds();
   }, [showtimeId, selectedSeats]);
 
+  // Input change & blur handlers with validation
+  const handleCardNameChange = (val) => {
+    setCardDetails(prev => ({ ...prev, cardName: val }));
+    if (fieldErrors.cardName) {
+      const res = validateCardholderName(val);
+      setFieldErrors(prev => ({ ...prev, cardName: res.valid ? '' : res.message }));
+    }
+  };
+
+  const handleCardNameBlur = () => {
+    const res = validateCardholderName(cardDetails.cardName);
+    setFieldErrors(prev => ({ ...prev, cardName: res.valid ? '' : res.message }));
+  };
+
+  const handleCardNumberChange = (val) => {
+    const res = validateCardNumber(val);
+    setCardDetails(prev => ({ ...prev, cardNumber: res.formatted }));
+    if (fieldErrors.cardNumber) {
+      setFieldErrors(prev => ({ ...prev, cardNumber: res.valid ? '' : res.message }));
+    }
+  };
+
+  const handleCardNumberBlur = () => {
+    const res = validateCardNumber(cardDetails.cardNumber);
+    setFieldErrors(prev => ({ ...prev, cardNumber: res.valid ? '' : res.message }));
+  };
+
+  const handleExpiryChange = (val) => {
+    const res = validateExpiryDate(val);
+    setCardDetails(prev => ({ ...prev, expiry: res.formatted }));
+    if (fieldErrors.expiry) {
+      setFieldErrors(prev => ({ ...prev, expiry: res.valid ? '' : res.message }));
+    }
+  };
+
+  const handleExpiryBlur = () => {
+    const res = validateExpiryDate(cardDetails.expiry);
+    setFieldErrors(prev => ({ ...prev, expiry: res.valid ? '' : res.message }));
+  };
+
+  const handleCVVChange = (val) => {
+    const res = validateCVV(val);
+    setCardDetails(prev => ({ ...prev, cvv: res.clean }));
+    if (fieldErrors.cvv) {
+      setFieldErrors(prev => ({ ...prev, cvv: res.valid ? '' : res.message }));
+    }
+  };
+
+  const handleCVVBlur = () => {
+    const res = validateCVV(cardDetails.cvv);
+    setFieldErrors(prev => ({ ...prev, cvv: res.valid ? '' : res.message }));
+  };
+
+  const handleMobileNumberChange = (val) => {
+    setMobileBanking(prev => ({ ...prev, mobileNumber: val }));
+    if (fieldErrors.mobileNumber) {
+      const res = validateSriLankanPhone(val);
+      setFieldErrors(prev => ({ ...prev, mobileNumber: res.valid ? '' : res.message }));
+    }
+  };
+
+  const handleMobileNumberBlur = () => {
+    const res = validateSriLankanPhone(mobileBanking.mobileNumber);
+    setFieldErrors(prev => ({ ...prev, mobileNumber: res.valid ? '' : res.message }));
+  };
+
+  const validateForm = () => {
+    const currentMethod = paymentMethod || 'Credit Card';
+    const errors = {
+      cardName: '',
+      cardNumber: '',
+      expiry: '',
+      cvv: '',
+      bank: '',
+      mobileNumber: ''
+    };
+    let firstInvalidRef = null;
+
+    if (currentMethod === 'Credit Card') {
+      const nameRes = validateCardholderName(cardDetails.cardName);
+      if (!nameRes.valid) {
+        errors.cardName = nameRes.message;
+        if (!firstInvalidRef) firstInvalidRef = cardNameRef;
+      }
+
+      const numRes = validateCardNumber(cardDetails.cardNumber);
+      if (!numRes.valid) {
+        errors.cardNumber = numRes.message;
+        if (!firstInvalidRef) firstInvalidRef = cardNumberRef;
+      }
+
+      const expRes = validateExpiryDate(cardDetails.expiry);
+      if (!expRes.valid) {
+        errors.expiry = expRes.message;
+        if (!firstInvalidRef) firstInvalidRef = expiryRef;
+      }
+
+      const cvvRes = validateCVV(cardDetails.cvv);
+      if (!cvvRes.valid) {
+        errors.cvv = cvvRes.message;
+        if (!firstInvalidRef) firstInvalidRef = cvvRef;
+      }
+    } else if (currentMethod === 'Mobile Banking') {
+      if (!mobileBanking.bank) {
+        errors.bank = 'Please select your bank.';
+        if (!firstInvalidRef) firstInvalidRef = bankRef;
+      }
+
+      const phoneRes = validateSriLankanPhone(mobileBanking.mobileNumber);
+      if (!phoneRes.valid) {
+        errors.mobileNumber = phoneRes.message;
+        if (!firstInvalidRef) firstInvalidRef = mobileNumberRef;
+      }
+    }
+
+    setFieldErrors(errors);
+
+    if (firstInvalidRef && firstInvalidRef.current) {
+      firstInvalidRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstInvalidRef.current.focus();
+      return false;
+    }
+
+    const hasError = Object.values(errors).some(msg => msg !== '');
+    return !hasError;
+  };
+
   const handlePayment = async (e) => {
     e.preventDefault();
 
-    if (finalSeats.length === 0) {
+    if (!showtimeId || !isObjectId(showtimeId)) {
+      setError("Invalid showtime ID. Please return to movie details.");
       return;
     }
+
+    if (finalSeats.length === 0) {
+      setError("No valid seats selected for payment.");
+      return;
+    }
+
+    const invalidSeat = finalSeats.find(s => !s._id || !isObjectId(s._id));
+    if (invalidSeat) {
+      setError("Selected seats contain invalid identifiers.");
+      return;
+    }
+
+    const isValid = validateForm();
+    if (!isValid) return;
 
     setLoading(true);
 
@@ -118,15 +291,13 @@ const PaymentPage = () => {
         seatIds: seatIdsToBook
       });
 
-      navigate('/booking-success', {
+      const newBookingId = res.data.bookingId || res.data.booking?._id;
+
+      navigate(`/booking-success/${newBookingId}`, {
         state: {
-          bookingRef: res.data.payment._id,
-          movieTitle: displayTitle,
-          showtime: `${formattedDate}, ${startTime}`,
-          hall: hallName,
-          selectedSeats: selectedSeats,
-          amount: displayPrice,
-          paymentMethod: paymentMethod
+          bookingId: newBookingId,
+          bookingRef: res.data.bookingReference || res.data.booking?.bookingReference,
+          booking: res.data.booking
         }
       });
 
@@ -153,16 +324,14 @@ const PaymentPage = () => {
     );
   }
 
-  const seatsDisplay = selectedSeats
-    ? (typeof selectedSeats[0] === 'string'
-      ? selectedSeats.join(', ')
-      : selectedSeats.map(s => `${s.row}${s.number}`).join(', '))
-    : '';
+  const currentMethod = paymentMethod || 'Credit Card';
+  const hasValidationErrors = (currentMethod === 'Credit Card' && (fieldErrors.cardName || fieldErrors.cardNumber || fieldErrors.expiry || fieldErrors.cvv)) ||
+                             (currentMethod === 'Mobile Banking' && (fieldErrors.bank || fieldErrors.mobileNumber));
 
   return (
     <div className="payment-container">
       <div className="payment-header-controls">
-        <button className="back-nav-btn" onClick={() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); navigate(-1); }}>
+        <button className="back-nav-btn" onClick={() => { navigate(-1); }}>
           <FiArrowLeft /> Back
         </button>
       </div>
@@ -171,7 +340,7 @@ const PaymentPage = () => {
         <div className="payment-card-header">
           <h2>Secure Checkout</h2>
           <p className="payment-method-display">
-            Payment Method: <strong>{paymentMethod || 'Credit Card'}</strong>
+            Payment Method: <strong>{currentMethod}</strong>
           </p>
           <p className="movie-for-text">Movie: <span>{displayTitle}</span> | Format: <span>{hallName}</span></p>
           <p className="movie-for-text">Schedule: <span>{formattedDate} at {startTime}</span></p>
@@ -201,96 +370,114 @@ const PaymentPage = () => {
           <span>Your booking information is securely processed.</span>
         </div>
 
-        <form onSubmit={handlePayment} className="payment-form">
-          {paymentMethod === "Credit Card" && (
+        <form onSubmit={handlePayment} className="payment-form" noValidate>
+          {currentMethod === "Credit Card" && (
             <>
               <div className="form-group">
-                <label>Cardholder Name</label>
+                <label htmlFor="cardName">Cardholder Name</label>
                 <input
+                  id="cardName"
+                  ref={cardNameRef}
                   type="text"
                   required
                   autoComplete="cc-name"
                   placeholder="John Doe"
+                  className={`form-input ${fieldErrors.cardName ? 'input-error' : ''}`}
                   value={cardDetails.cardName}
-                  onChange={(e) =>
-                    setCardDetails({
-                      ...cardDetails,
-                      cardName: e.target.value,
-                    })
-                  }
+                  onChange={(e) => handleCardNameChange(e.target.value)}
+                  onBlur={handleCardNameBlur}
+                  aria-invalid={!!fieldErrors.cardName}
                 />
+                {fieldErrors.cardName && (
+                  <span className="inline-error-text">{fieldErrors.cardName}</span>
+                )}
               </div>
 
               <div className="form-group">
-                <label>Card Number</label>
+                <label htmlFor="cardNumber">Card Number</label>
                 <input
+                  id="cardNumber"
+                  ref={cardNumberRef}
                   type="text"
+                  inputMode="numeric"
                   required
                   autoComplete="cc-number"
                   maxLength="19"
-                  placeholder="1234 5678 9012 3456"
+                  placeholder="4242 4242 4242 4242"
+                  className={`form-input ${fieldErrors.cardNumber ? 'input-error' : ''}`}
                   value={cardDetails.cardNumber}
-                  onChange={(e) =>
-                    setCardDetails({
-                      ...cardDetails,
-                      cardNumber: e.target.value,
-                    })
-                  }
+                  onChange={(e) => handleCardNumberChange(e.target.value)}
+                  onBlur={handleCardNumberBlur}
+                  aria-invalid={!!fieldErrors.cardNumber}
                 />
+                {fieldErrors.cardNumber && (
+                  <span className="inline-error-text">{fieldErrors.cardNumber}</span>
+                )}
               </div>
 
               <div className="row">
                 <div className="col form-group">
-                  <label>Expiry</label>
+                  <label htmlFor="expiry">Expiry</label>
                   <input
+                    id="expiry"
+                    ref={expiryRef}
                     type="text"
+                    inputMode="numeric"
                     required
                     autoComplete="cc-exp"
+                    maxLength="5"
                     placeholder="MM/YY"
+                    className={`form-input ${fieldErrors.expiry ? 'input-error' : ''}`}
                     value={cardDetails.expiry}
-                    onChange={(e) =>
-                      setCardDetails({
-                        ...cardDetails,
-                        expiry: e.target.value,
-                      })
-                    }
+                    onChange={(e) => handleExpiryChange(e.target.value)}
+                    onBlur={handleExpiryBlur}
+                    aria-invalid={!!fieldErrors.expiry}
                   />
+                  {fieldErrors.expiry && (
+                    <span className="inline-error-text">{fieldErrors.expiry}</span>
+                  )}
                 </div>
 
                 <div className="col form-group">
-                  <label>CVV</label>
+                  <label htmlFor="cvv">CVV</label>
                   <input
+                    id="cvv"
+                    ref={cvvRef}
                     type="password"
+                    inputMode="numeric"
                     required
-                    maxLength="4"
+                    autoComplete="cc-csc"
+                    maxLength="3"
                     placeholder="123"
+                    className={`form-input ${fieldErrors.cvv ? 'input-error' : ''}`}
                     value={cardDetails.cvv}
-                    onChange={(e) =>
-                      setCardDetails({
-                        ...cardDetails,
-                        cvv: e.target.value,
-                      })
-                    }
+                    onChange={(e) => handleCVVChange(e.target.value)}
+                    onBlur={handleCVVBlur}
+                    aria-invalid={!!fieldErrors.cvv}
                   />
+                  {fieldErrors.cvv && (
+                    <span className="inline-error-text">{fieldErrors.cvv}</span>
+                  )}
                 </div>
               </div>
             </>
           )}
 
-          {paymentMethod === "Mobile Banking" && (
+          {currentMethod === "Mobile Banking" && (
             <>
               <div className="form-group">
-                <label>Select Bank</label>
-
+                <label htmlFor="bankSelect">Select Bank</label>
                 <select
+                  id="bankSelect"
+                  ref={bankRef}
                   required
+                  className={`form-input ${fieldErrors.bank ? 'input-error' : ''}`}
                   value={mobileBanking.bank}
-                  onChange={(e) =>
-                    setMobileBanking({
-                      ...mobileBanking,
-                      bank: e.target.value,
-                    })
-                  }
+                  onChange={(e) => {
+                    setMobileBanking(prev => ({ ...prev, bank: e.target.value }));
+                    if (e.target.value) setFieldErrors(prev => ({ ...prev, bank: '' }));
+                  }}
+                  aria-invalid={!!fieldErrors.bank}
                 >
                   <option value="">Choose a Bank</option>
                   <option>Commercial Bank</option>
@@ -299,53 +486,51 @@ const PaymentPage = () => {
                   <option>HNB</option>
                   <option>Sampath Bank</option>
                 </select>
+                {fieldErrors.bank && (
+                  <span className="inline-error-text">{fieldErrors.bank}</span>
+                )}
               </div>
 
               <div className="form-group">
-                <label>Mobile Number</label>
-
+                <label htmlFor="mobileNumber">Mobile Number</label>
                 <input
+                  id="mobileNumber"
+                  ref={mobileNumberRef}
                   type="tel"
+                  inputMode="tel"
                   required
-                  placeholder="07X XXX XXXX"
+                  autoComplete="tel"
+                  placeholder="0771234567 or +94771234567"
+                  className={`form-input ${fieldErrors.mobileNumber ? 'input-error' : ''}`}
                   value={mobileBanking.mobileNumber}
-                  onChange={(e) =>
-                    setMobileBanking({
-                      ...mobileBanking,
-                      mobileNumber: e.target.value,
-                    })
-                  }
+                  onChange={(e) => handleMobileNumberChange(e.target.value)}
+                  onBlur={handleMobileNumberBlur}
+                  aria-invalid={!!fieldErrors.mobileNumber}
                 />
+                {fieldErrors.mobileNumber && (
+                  <span className="inline-error-text">{fieldErrors.mobileNumber}</span>
+                )}
               </div>
             </>
           )}
 
-          {paymentMethod === "Pay at Counter" && (
+          {currentMethod === "Pay at Counter" && (
             <div className="counter-info-box">
               <h3>Pay at Counter</h3>
-
-              <p>
-                Your selected seats will be reserved temporarily.
-              </p>
-
-              <p>
-                Please complete your payment at the cinema counter
-                at least <strong>30 minutes</strong> before the movie starts.
-              </p>
-
-              <p>
-                Reservations expire automatically if payment is not completed.
-              </p>
+              <p>Your selected seats will be reserved temporarily.</p>
+              <p>Please complete your payment at the cinema counter at least <strong>30 minutes</strong> before the movie starts.</p>
+              <p>Reservations expire automatically if payment is not completed.</p>
             </div>
           )}
+
           <button
             type="submit"
-            className="pay-now-btn"
-            disabled={loading}
+            className="pay-btn"
+            disabled={loading || hasValidationErrors}
           >
-            {paymentMethod === "Pay at Counter"
+            {currentMethod === "Pay at Counter"
               ? "Confirm Reservation"
-              : paymentMethod === "Mobile Banking"
+              : currentMethod === "Mobile Banking"
                 ? "Confirm Payment"
                 : "Pay Now"}
           </button>
