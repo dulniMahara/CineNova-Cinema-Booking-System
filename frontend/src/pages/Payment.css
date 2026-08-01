@@ -240,3 +240,17 @@
   margin-top: 10px;
   font-size: 0.85rem;
 }
+
+.input-error {
+  border-color: #EF4444 !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+.inline-error-text {
+  color: #FCA5A5;
+  font-size: 0.8rem;
+  margin-top: 6px;
+  display: block;
+  font-weight: 500;
+}
