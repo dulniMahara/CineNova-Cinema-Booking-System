@@ -11,12 +11,13 @@ import {
   MdTheaters,
   MdPayments,
   MdConfirmationNumber,
-  MdSearch,
   MdPeople,
   MdLogin,
   MdHome,
-  MdInfo
+  MdInfo,
+  MdDashboard
 } from "react-icons/md";
+import { FiSearch, FiBell, FiX, FiFilm, FiLogOut, FiUser } from "react-icons/fi";
 import { SearchContext } from "../context/SearchContext";
 import { getMovies } from "../services/movieService";
 import ProfileDropdown from "./ProfileDropdown";
@@ -171,8 +172,8 @@ const Topbar = () => {
 
   const adminLinks = (
     <>
-      <NavLink to="/home" onClick={() => setMobileOpen(false)}>
-        <MdHome /> Home
+      <NavLink to="/admin/dashboard" onClick={() => setMobileOpen(false)}>
+        <MdDashboard /> Dashboard
       </NavLink>
       <NavLink to="/admin/movies" onClick={() => setMobileOpen(false)}>
         <MdMovie /> Movies
@@ -285,16 +286,35 @@ const Topbar = () => {
           <>
             <div className="mobile-menu-divider" />
             {isAuthenticated && (
-              <NavLink
-                to="/notifications"
-                className="mobile-menu-item"
-                style={{ color: isNotificationsPage ? "#ff3d00" : "#fff" }}
-                onClick={() => setMobileOpen(false)}
-              >
-                <MdNotifications /> Notifications
-                {/* Mobile Badge */}
-                {unreadCount > 0 && <span style={{marginLeft:'5px', color:'red'}}>({unreadCount})</span>}
-              </NavLink>
+              <>
+                <NavLink
+                  to="/profile"
+                  className="mobile-menu-item"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <FiUser /> My Profile
+                </NavLink>
+                <NavLink
+                  to="/notifications"
+                  className="mobile-menu-item"
+                  style={{ color: isNotificationsPage ? "#ff3d00" : "#fff" }}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <MdNotifications /> Notifications
+                  {/* Mobile Badge */}
+                  {unreadCount > 0 && <span style={{marginLeft:'5px', color:'red'}}>({unreadCount})</span>}
+                </NavLink>
+                <button
+                  className="mobile-menu-item logout-mobile-btn"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', color: '#ff4d4d', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 15px', fontSize: '1rem' }}
+                >
+                  <FiLogOut /> Sign Out
+                </button>
+              </>
             )}
 
             {!isAuthenticated && (
@@ -311,63 +331,87 @@ const Topbar = () => {
       </div>
 
       <div className="topbar-right">
-        <div className="search-container" ref={searchRef}>
-          <MdSearch
-            size={22}
-            className="search-icon"
-            onClick={() => setSearchOpen(!searchOpen)}
-          />
-          {searchOpen && (
-            <div className="search-dropdown-wrapper">
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search movies..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-              <div className="search-dropdown">
-                {searchResults.map((movie) => (
-                  <div
-                    key={movie._id}
-                    className="search-result-item"
-                    onClick={() => handleResultClick(movie._id)}
-                  >
-                    {movie.title}
-                  </div>
-                ))}
-                {notFound && (
-                  <div className="search-result-item not-found">
-                    Movie not found
+        <div className="header-actions">
+
+          {/* 1. Search Action Control */}
+          <div className="header-search-wrapper" ref={searchRef}>
+            <button
+              className={`header-action-btn search-btn ${searchOpen ? 'active' : ''}`}
+              onClick={() => setSearchOpen(!searchOpen)}
+              aria-label="Search movies"
+              aria-expanded={searchOpen}
+            >
+              {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}
+            </button>
+
+            {searchOpen && (
+              <div className="search-dropdown-wrapper">
+                <div className="search-input-box">
+                  <FiSearch className="input-search-icon" />
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search movies..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+                  {searchQuery && (
+                    <button className="clear-search-x" onClick={() => setSearchQuery('')}>
+                      <FiX size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {(searchResults.length > 0 || notFound) && (
+                  <div className="search-dropdown">
+                    {searchResults.map((movie) => (
+                      <div
+                        key={movie._id}
+                        className="search-result-item"
+                        onClick={() => handleResultClick(movie._id)}
+                      >
+                        <FiFilm className="result-icon" />
+                        <span>{movie.title}</span>
+                      </div>
+                    ))}
+                    {notFound && (
+                      <div className="search-result-item not-found">
+                        No movies found
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            </div>
-          )}
-        </div>
-
-        {isAuthenticated && (
-          <NavLink
-            to="/notifications"
-            className="notifications"
-            style={{ color: isNotificationsPage ? "#ff3d00" : "#fff" }}
-          >
-            <MdNotifications size={22} />
-            {/* --- Desktop Badge --- */}
-            {unreadCount > 0 && (
-                <span className="badge">{unreadCount}</span>
             )}
-          </NavLink>
-        )}
+          </div>
 
-        {isAuthenticated ? (
-          <ProfileDropdown onLogout={handleLogout} />
-        ) : (
-          <NavLink to="/login" className="login-btn-premium">
-            <MdLogin size={18} /> <span>Login</span>
-          </NavLink>
-        )}
+          {/* 2. Notification Bell Control */}
+          {isAuthenticated && (
+            <NavLink
+              to="/notifications"
+              className={`header-action-btn notification-btn ${isNotificationsPage ? 'active' : ''}`}
+              aria-label="Open notifications"
+            >
+              <FiBell size={18} />
+              {unreadCount > 0 && (
+                <span className="notification-badge">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </NavLink>
+          )}
+
+          {/* 3. Profile Dropdown or Login Button */}
+          {isAuthenticated ? (
+            <ProfileDropdown onLogout={handleLogout} />
+          ) : (
+            <NavLink to="/login" className="login-btn-premium">
+              <MdLogin size={18} /> <span>Login</span>
+            </NavLink>
+          )}
+
+        </div>
       </div>
     </nav>
   );

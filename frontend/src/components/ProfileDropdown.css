@@ -3,19 +3,67 @@
 .profile-dropdown-container {
   position: relative;
   display: inline-block;
+  overflow: visible !important;
 }
 
-.profile-trigger {
+/* Premium Dark Glass Pill Container Trigger */
+.profile-pill-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 4px 4px;
+  background: rgba(18, 21, 31, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 30px;
   cursor: pointer;
-  border-radius: 50%;
-  padding: 2px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.profile-trigger:hover {
-  transform: scale(1.06);
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.5), 0 0 0 2px rgba(212, 175, 55, 0.8);
+.profile-pill-trigger:hover,
+.profile-pill-trigger.active {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(212, 175, 55, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+.profile-pill-trigger:focus-visible {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4);
+}
+
+.profile-first-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.2px;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-pill-trigger:hover .profile-first-name {
+  color: #fbbf24;
+}
+
+.chevron-icon {
+  font-size: 1rem;
+  color: #94a3b8;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.profile-pill-trigger:hover .chevron-icon,
+.profile-pill-trigger.active .chevron-icon {
+  color: #fbbf24;
+}
+
+.chevron-icon.open {
+  transform: rotate(180deg);
 }
 
 /* Glass Dropdown Panel */
@@ -30,7 +78,7 @@
   border-radius: 20px;
   border: 1px solid rgba(212, 175, 55, 0.3);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.12);
-  z-index: 9999;
+  z-index: 9999999 !important;
   overflow: hidden;
   animation: dropdownSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -161,4 +209,14 @@
 
 .dropdown-menu-item.logout-item:hover .menu-icon {
   color: #ef4444;
+}
+
+@media (max-width: 640px) {
+  .profile-first-name {
+    display: none;
+  }
+  .profile-pill-trigger {
+    padding: 4px;
+    gap: 4px;
+  }
 }
