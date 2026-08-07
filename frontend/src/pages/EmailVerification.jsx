@@ -8,6 +8,8 @@ const EmailVerification = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('verifying'); // verifying, success, error
   const [message, setMessage] = useState('Verifying your email...');
+  // Auto-redirect timer reference
+  const redirectTimeoutRef = React.useRef(null);
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -17,16 +19,19 @@ const EmailVerification = () => {
         );
         
         if (response.data.success) {
-          setStatus('success');
-          setMessage('Email verified successfully!');
-          
-          // Store token and user data if provided
-          if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-            localStorage.setItem('role', response.data.user.role);
+            setStatus('success');
+            setMessage('Email verified successfully!');
+            // Store token and user data if provided
+            if (response.data.token) {
+              localStorage.setItem('token', response.data.token);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+              localStorage.setItem('role', response.data.user.role);
+            }
+            // Start 5-second redirect to login
+            redirectTimeoutRef.current = setTimeout(() => {
+              navigate('/login');
+            }, 5000);
           }
-        }
       } catch (error) {
         setStatus('error');
         setMessage(
@@ -39,6 +44,13 @@ const EmailVerification = () => {
     if (token) {
       verifyEmail();
     }
+    
+    // Cleanup redirect timer on unmount or when token changes
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
   }, [token, navigate]);
 
   return (
@@ -53,13 +65,14 @@ const EmailVerification = () => {
         )}
         
         {status === 'success' && (
-          <>
-            <div className="success-icon">✓</div>
-            <h2>{message}</h2>
-            <p>Your email has been verified successfully. You can now access all features of your account.</p>
-            <Link to="/login" className="home-button">Login to Your Account</Link>
-          </>
-        )}
+            <>
+              <div className="success-icon">✓</div>
+              <h2>{message}</h2>
+              <p>Your email has been verified successfully. You will be redirected to the login page shortly.</p>
+              <div className="redirect-message">Redirecting in 5 seconds...</div>
+              <Link to="/login" className="home-button">Login to Your Account</Link>
+            </>
+          )}
         
         {status === 'error' && (
           <>

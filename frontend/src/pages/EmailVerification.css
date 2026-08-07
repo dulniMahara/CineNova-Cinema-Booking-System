@@ -3,24 +3,24 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #010122;
+  background: #07100D; /* CineNova dark background */
   padding: 20px;
 }
 
 .verification-card {
-  background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
+  background: #102A22; /* CineNova card background */
+  border: 1px solid #2F6F5A; /* CineNova border */
   border-radius: 20px;
   padding: 50px;
   max-width: 500px;
   width: 100%;
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .spinner {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #1F7A5A; /* CineNova primary */
   border-radius: 50%;
   width: 60px;
   height: 60px;
@@ -37,7 +37,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: #4caf50;
+  background: #1F7A5A; /* CineNova primary */
   color: white;
   display: flex;
   align-items: center;
@@ -110,16 +110,16 @@
 }
 
 .home-button {
-  background: #ff3d00;
-  color: white;
-  border: 1px solid #ff3d00;
+  background: #1F7A5A; /* CineNova primary */
+  color: #F5F7F6; /* main text */
+  border: 1px solid #1F7A5A;
 }
 
 .home-button:hover {
-  background: #ff5722;
-  border-color: #ff5722;
+  background: #24966C; /* CineNova hover */
+  border-color: #24966C;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 61, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(36, 150, 108, 0.3);
 }
 
 .resend-button {
