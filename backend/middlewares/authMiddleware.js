@@ -36,12 +36,12 @@ const protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    res.status(403).json({ message: "Invalid token" });
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
 function isAdmin(req, res, next) {
-  if (req.user.role !== "admin") {
+  if (!req.user || req.user.role !== "admin") {
     return res.status(403).json({ message: "Admin access required" });
   }
   next();

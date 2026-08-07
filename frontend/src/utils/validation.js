@@ -1,6 +1,78 @@
 // CineNova Validation Helper Library
 
 /**
+ * Validates full name (min 2 chars, letters, spaces, hyphens, apostrophes).
+ */
+export const validateName = (name) => {
+  const trimmed = String(name || "").trim();
+  if (!trimmed) {
+    return { valid: false, message: "Please enter your full name." };
+  }
+  if (trimmed.length < 2) {
+    return { valid: false, message: "Full name must be at least 2 characters long." };
+  }
+  const nameRegex = /^[a-zA-Z\s'-]+$/;
+  if (!nameRegex.test(trimmed)) {
+    return { valid: false, message: "Name can only contain letters, spaces, hyphens, and apostrophes." };
+  }
+  return { valid: true, message: "" };
+};
+
+/**
+ * Validates email address format.
+ */
+export const validateEmail = (email) => {
+  const trimmed = String(email || "").trim().toLowerCase();
+  if (!trimmed) {
+    return { valid: false, message: "Please enter your email address." };
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmed)) {
+    return { valid: false, message: "Please enter a valid email address." };
+  }
+  return { valid: true, message: "", cleanEmail: trimmed };
+};
+
+/**
+ * Validates password strength (min 8 chars, uppercase, lowercase, number, special char).
+ */
+export const validatePassword = (password) => {
+  const pwd = String(password || "");
+  if (!pwd) {
+    return { valid: false, message: "Please enter a password." };
+  }
+  if (pwd.length < 8) {
+    return { valid: false, message: "Password must be at least 8 characters long." };
+  }
+  const hasUpper = /[A-Z]/.test(pwd);
+  const hasLower = /[a-z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd);
+
+  if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
+    return { 
+      valid: false, 
+      message: "Password must include uppercase, lowercase, number, and special character." 
+    };
+  }
+
+  return { valid: true, message: "" };
+};
+
+/**
+ * Validates confirm password matches password.
+ */
+export const validateConfirmPassword = (password, confirmPassword) => {
+  if (!confirmPassword) {
+    return { valid: false, message: "Please confirm your password." };
+  }
+  if (password !== confirmPassword) {
+    return { valid: false, message: "Passwords do not match." };
+  }
+  return { valid: true, message: "" };
+};
+
+/**
  * Validates Sri Lankan mobile phone numbers.
  * Formats supported: 07XXXXXXXX, +947XXXXXXXX, 947XXXXXXXX
  */

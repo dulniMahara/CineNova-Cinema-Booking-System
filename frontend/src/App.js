@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import PageLayout from "./components/PageLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -32,6 +32,7 @@ import MyBookingPage from './pages/MyBookingsPage';
 import './pages/Booking.css';
 import PaymentPage from './pages/PaymentPage';
 import AdminPayments from './pages/admin/AdminPayments';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import PaymentHistory from './pages/PaymentHistory';
 import Notifications from "./pages/customers/Notifications";
 import EmailVerification from "./pages/EmailVerification";
@@ -44,6 +45,19 @@ import './ToastStyles.css';
 
 function App() {
   const role = localStorage.getItem("role");
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' || e.key === 'user' || e.key === 'role') {
+        if (!e.newValue) {
+          // Token or session cleared in another tab -> Sync logout
+          window.location.reload();
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
     <SearchProvider>
@@ -68,11 +82,24 @@ function App() {
             path="/"
             element={
               role === "admin" ? (
-                <Navigate to="/admin/movies" />
+                <Navigate to="/admin/dashboard" />
               ) : (
                 <Navigate to="/home" />
               )
             }
+          />
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute roleRequired="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={<Navigate to="/admin/dashboard" replace />}
           />
 
           <Route

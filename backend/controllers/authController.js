@@ -3,11 +3,104 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/emailService');
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'secretkey123', {
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET || 'secretkey123', {
     expiresIn: '30d',
   });
 };
+
+const buildCineNovaVerificationEmailHTML = (name, verificationURL) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your CineNova Account</title>
+</head>
+<body style="margin:0;padding:0;background-color:#070B0A;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#F5F7F6;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#070B0A;padding:40px 15px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:580px;background-color:#102A22;border:1px solid #2F6F5A;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#070B0A;padding:32px 30px;text-align:center;border-bottom:1px solid #2F6F5A;">
+              <div style="font-size:28px;font-weight:900;letter-spacing:2px;color:#F5F7F6;text-transform:uppercase;">
+                CineNova
+              </div>
+              <div style="font-size:12px;letter-spacing:1px;color:#C9A95B;margin-top:6px;font-weight:600;">
+                Your cinematic experience starts here.
+              </div>
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding:40px 32px;text-align:left;">
+              <h2 style="margin:0 0 16px 0;color:#F5F7F6;font-size:22px;font-weight:700;">
+                Verify Your Email
+              </h2>
+              <p style="margin:0 0 16px 0;color:#F5F7F6;font-size:15px;line-height:1.6;font-weight:600;">
+                Welcome, ${name || 'Valued Member'}!
+              </p>
+              <p style="margin:0 0 24px 0;color:#9CAAA4;font-size:15px;line-height:1.6;">
+                Thanks for creating your CineNova account.<br/><br/>
+                Please verify your email address to activate your account and continue booking your favourite movies.
+              </p>
+              
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${verificationURL}" target="_blank" style="display:inline-block;background-color:#1F7A5A;color:#F5F7F6;padding:16px 36px;border-radius:8px;text-decoration:none;font-size:16px;font-weight:700;letter-spacing:0.5px;">
+                      Verify Email Address
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback Link Box -->
+              <div style="background-color:#070B0A;border:1px solid #2F6F5A;border-radius:8px;padding:16px;margin-top:24px;">
+                <p style="margin:0 0 8px 0;color:#9CAAA4;font-size:13px;font-weight:600;">
+                  Button not working?<br/>
+                  Copy and paste the verification link into your browser:
+                </p>
+                <p style="margin:0;font-size:12px;word-break:break-all;line-height:1.5;">
+                  <a href="${verificationURL}" style="color:#C9A95B;text-decoration:underline;">${verificationURL}</a>
+                </p>
+              </div>
+
+              <!-- Expiry Notice -->
+              <p style="margin:24px 0 0 0;color:#C9A95B;font-size:13px;font-weight:600;">
+                This verification link expires in 24 hours.
+              </p>
+              <p style="margin:12px 0 0 0;color:#9CAAA4;font-size:13px;line-height:1.5;">
+                If you did not create a CineNova account, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#070B0A;padding:24px 30px;text-align:center;border-top:1px solid #2F6F5A;">
+              <p style="margin:0 0 6px 0;color:#9CAAA4;font-size:12px;">
+                This is an automated message.<br/>
+                Please do not reply.
+              </p>
+              <p style="margin:0;color:#9CAAA4;font-size:12px;font-weight:600;">
+                © 2026 CineNova. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -52,177 +145,11 @@ exports.register = async (req, res) => {
     const verificationURL = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
 
     // Send verification email
-    const message = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #141436;
-          }
-          .email-container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .email-header {
-            background: linear-gradient(135deg, #141436 0%, #1a1a3e 100%);
-            padding: 40px 30px;
-            text-align: center;
-            border-bottom: 2px solid rgba(255, 61, 0, 0.3);
-          }
-          .logo {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ffffff;
-            margin: 0;
-            background: linear-gradient(135deg, #fff 0%, #ff3d00 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          }
-          .email-body {
-            padding: 50px 40px;
-            color: #ffffff;
-          }
-          .greeting {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #ffffff;
-          }
-          .message {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #cccccc;
-            margin-bottom: 30px;
-          }
-          .button-container {
-            text-align: center;
-            margin: 40px 0;
-          }
-          .verify-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff3d00 0%, #ff5722 100%);
-            color: #ffffff;
-            text-decoration: none;
-            padding: 18px 50px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
-            transition: all 0.3s ease;
-          }
-          .link-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 4px solid #ff3d00;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-          }
-          .link-label {
-            font-size: 14px;
-            color: #cccccc;
-            margin-bottom: 10px;
-          }
-          .link-text {
-            font-size: 12px;
-            color: #ff3d00;
-            word-break: break-all;
-            line-height: 1.6;
-          }
-          .expiry-notice {
-            font-size: 14px;
-            color: #ff6b6b;
-            margin-top: 20px;
-            font-weight: 600;
-          }
-          .warning {
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 4px solid rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-          }
-          .warning-text {
-            font-size: 14px;
-            color: #cccccc;
-            line-height: 1.6;
-          }
-          .email-footer {
-            background: linear-gradient(135deg, #0f0f2e 0%, #141436 100%);
-            padding: 30px;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .footer-text {
-            font-size: 14px;
-            color: #888888;
-            margin: 5px 0;
-          }
-          .footer-brand {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ff3d00;
-            margin-top: 15px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="email-container">
-          <div class="email-header">
-            <h1 class="logo">🎬 Cinema Booking</h1>
-          </div>
-          
-          <div class="email-body">
-            <h2 class="greeting">Welcome, ${name}!</h2>
-            
-            <p class="message">
-              Thank you for registering with Cinema Booking System. To complete your registration and start booking your favorite movies, please verify your email address.
-            </p>
-            
-            <div class="button-container">
-              <a href="${verificationURL}" class="verify-button">
-                ✓ Verify Email Address
-              </a>
-            </div>
-            
-            <div class="link-container">
-              <div class="link-label">Or copy and paste this link in your browser:</div>
-              <div class="link-text">${verificationURL}</div>
-            </div>
-            
-            <p class="expiry-notice">⏰ This link will expire in 24 hours</p>
-            
-            <div class="warning">
-              <div class="warning-text">
-                If you didn't create an account with Cinema Booking System, you can safely ignore this email.
-              </div>
-            </div>
-          </div>
-          
-          <div class="email-footer">
-            <p class="footer-text">This is an automated message, please do not reply.</p>
-            <p class="footer-text">© 2026 Cinema Booking System | All Rights Reserved</p>
-            <div class="footer-brand">Cinema Booking</div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+    const message = buildCineNovaVerificationEmailHTML(user.name, verificationURL);
 
     await sendEmail({
       email: user.email,
-      subject: 'Verify Your Email - Cinema Booking System',
+      subject: 'Verify Your Email - CineNova',
       html: message
     });
 
@@ -258,7 +185,7 @@ exports.login = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.role),
       user: {
         id: user._id,
         name: user.name,
@@ -470,160 +397,11 @@ exports.resendVerificationEmail = async (req, res) => {
 
     // Create verification URL pointing to frontend
     const verificationURL = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-
-    // Send verification email
-    const message = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #141436;
-          }
-          .email-container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .email-header {
-            background: linear-gradient(135deg, #141436 0%, #1a1a3e 100%);
-            padding: 40px 30px;
-            text-align: center;
-            border-bottom: 2px solid rgba(255, 61, 0, 0.3);
-          }
-          .logo {
-            font-size: 32px;
-            font-weight: 800;
-            color: #ffffff;
-            margin: 0;
-            background: linear-gradient(135deg, #fff 0%, #ff3d00 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          }
-          .email-body {
-            padding: 50px 40px;
-            color: #ffffff;
-          }
-          .greeting {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #ffffff;
-          }
-          .message {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #cccccc;
-            margin-bottom: 30px;
-          }
-          .button-container {
-            text-align: center;
-            margin: 40px 0;
-          }
-          .verify-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff3d00 0%, #ff5722 100%);
-            color: #ffffff;
-            text-decoration: none;
-            padding: 18px 50px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
-          }
-          .link-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-left: 4px solid #ff3d00;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-          }
-          .link-label {
-            font-size: 14px;
-            color: #cccccc;
-            margin-bottom: 10px;
-          }
-          .link-text {
-            font-size: 12px;
-            color: #ff3d00;
-            word-break: break-all;
-            line-height: 1.6;
-          }
-          .expiry-notice {
-            font-size: 14px;
-            color: #ff6b6b;
-            margin-top: 20px;
-            font-weight: 600;
-          }
-          .email-footer {
-            background: linear-gradient(135deg, #0f0f2e 0%, #141436 100%);
-            padding: 30px;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .footer-text {
-            font-size: 14px;
-            color: #888888;
-            margin: 5px 0;
-          }
-          .footer-brand {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ff3d00;
-            margin-top: 15px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="email-container">
-          <div class="email-header">
-            <h1 class="logo">🎬 Cinema Booking</h1>
-          </div>
-          
-          <div class="email-body">
-            <h2 class="greeting">Hello, ${user.name}!</h2>
-            
-            <p class="message">
-              You requested a new verification email. Please verify your email address by clicking the button below to activate your account.
-            </p>
-            
-            <div class="button-container">
-              <a href="${verificationURL}" class="verify-button">
-                ✓ Verify Email Address
-              </a>
-            </div>
-            
-            <div class="link-container">
-              <div class="link-label">Or copy and paste this link in your browser:</div>
-              <div class="link-text">${verificationURL}</div>
-            </div>
-            
-            <p class="expiry-notice">⏰ This link will expire in 24 hours</p>
-          </div>
-          
-          <div class="email-footer">
-            <p class="footer-text">This is an automated message, please do not reply.</p>
-            <p class="footer-text">© 2026 Cinema Booking System | All Rights Reserved</p>
-            <div class="footer-brand">Cinema Booking</div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+    const message = buildCineNovaVerificationEmailHTML(user.name, verificationURL);
 
     await sendEmail({
       email: user.email,
-      subject: 'Verify Your Email - Cinema Booking System',
+      subject: 'Verify Your Email - CineNova',
       html: message
     });
 

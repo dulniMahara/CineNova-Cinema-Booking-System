@@ -1,136 +1,259 @@
+/* CineNova Customer Register Styles - Dark Emerald Glass Theme */
+
 .register-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100%;
-    background: #010122;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  background: #070B0A;
+  padding: 36px 16px;
+  box-sizing: border-box;
+  font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
 }
 
-.register-wrapper .register-form-box {
-    width: 420px;
-    background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
-    padding: 40px;
+.register-card-container {
+  width: 100%;
+  max-width: 680px;
+  background: rgba(16, 42, 34, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid #2F6F5A;
+  border-radius: 24px;
+  padding: 40px 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 30px rgba(31, 122, 90, 0.1);
+  color: #F5F7F6;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.register-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.auth-input-group.full-width {
+  grid-column: span 2;
+}
+
+.req-star {
+  color: #E57373;
+  margin-left: 2px;
+}
+
+.opt-text {
+  font-size: 0.76rem;
+  color: #9CAAA4;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.auth-alert-success {
+  background: rgba(31, 122, 90, 0.2);
+  border: 1px solid #24966C;
+  color: #A7F3D0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.pwd-requirements-box {
+  background: rgba(7, 11, 10, 0.65);
+  border: 1px solid rgba(47, 111, 90, 0.4);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+
+.pwd-req-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9CAAA4;
+  margin-bottom: 8px;
+}
+
+.pwd-req-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+.pwd-req-pill {
+  font-size: 0.76rem;
+  color: #9CAAA4;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 10px;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.pwd-req-pill.met {
+  color: #34D399;
+  background: rgba(31, 122, 90, 0.25);
+  border-color: rgba(52, 211, 153, 0.35);
+  font-weight: 600;
+}
+
+/* Container for input and icons - clean block positioning */
+.auth-field-wrapper,
+.register-password-field {
+  position: relative !important;
+  width: 100% !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+/* Full Width Text Input Bar */
+.auth-text-input {
+  width: 100% !important;
+  display: block !important;
+  height: 48px !important;
+  background: rgba(7, 11, 10, 0.65) !important;
+  border: 1px solid #2F6F5A !important;
+  border-radius: 12px !important;
+  color: #F5F7F6 !important;
+  font-size: 0.92rem !important;
+  padding-left: 46px !important;
+  padding-right: 48px !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.register-password-field input {
+  width: 100% !important;
+  padding-right: 48px !important;
+  box-sizing: border-box !important;
+}
+
+/* Input Focus Glow ONLY on input focus, NOT on hovering eye icon */
+.auth-text-input:focus {
+  border-color: #1F7A5A !important;
+  box-shadow: 0 0 0 3px rgba(31, 122, 90, 0.25) !important;
+}
+
+.auth-text-input.has-error {
+  border-color: #E57373 !important;
+  box-shadow: 0 0 0 3px rgba(229, 115, 115, 0.2) !important;
+}
+
+.auth-text-input::placeholder {
+  color: rgba(156, 170, 164, 0.6) !important;
+}
+
+/* Prevent Chrome / Browser Autofill Light-Blue Background */
+.auth-text-input:-webkit-autofill,
+.auth-text-input:-webkit-autofill:hover, 
+.auth-text-input:-webkit-autofill:focus, 
+.auth-text-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #F5F7F6 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #091913 inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+  border-radius: 12px !important;
+}
+
+/* Left Icon (Lock / Email / User / Phone) */
+.auth-input-icon-left {
+  position: absolute !important;
+  left: 16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #9CAAA4 !important;
+  font-size: 1.1rem !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+}
+
+/* Dedicated Class and Specificity Overrides to Prevent inheriting form button styles */
+.register-password-toggle,
+.register-form .register-password-field .register-password-toggle,
+.register-card-container .register-password-field .register-password-toggle,
+form .register-password-field .register-password-toggle {
+  position: absolute !important;
+  top: 50% !important;
+  right: 14px !important;
+  transform: translateY(-50%) !important;
+
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+
+  color: #9ca3af !important;
+  cursor: pointer !important;
+  z-index: 3 !important;
+  transition: color 0.2s ease !important;
+}
+
+.register-password-toggle:hover,
+.register-form .register-password-field .register-password-toggle:hover,
+.register-card-container .register-password-field .register-password-toggle:hover,
+form .register-password-field .register-password-toggle:hover {
+  background: transparent !important;
+  color: #34a47a !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.register-password-toggle:active,
+.register-form .register-password-field .register-password-toggle:active,
+.register-card-container .register-password-field .register-password-toggle:active,
+form .register-password-field .register-password-toggle:active {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+}
+
+.register-password-toggle:focus-visible,
+.register-form .register-password-field .register-password-toggle:focus-visible,
+.register-card-container .register-password-field .register-password-toggle:focus-visible,
+form .register-password-field .register-password-toggle:focus-visible {
+  outline: 2px solid #34a47a !important;
+  outline-offset: 2px !important;
+  background: transparent !important;
+}
+
+.register-password-toggle svg {
+  width: 19px !important;
+  height: 19px !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 640px) {
+  .register-card-container {
+    padding: 32px 20px;
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    position: relative;
-}
+  }
 
-.back-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    font-size: 16px;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    z-index: 10;
-}
+  .register-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 
-.back-button:hover {
-    background: rgba(255, 61, 0, 0.2);
-    border-color: #ff3d00;
-}
+  .auth-input-group.full-width {
+    grid-column: span 1;
+  }
 
-form h1 {
-    font-size: 36px;
-    text-align: center;
-    color: #ffffff;
-}
-
-form .register-input-box {
-    position: relative;
-    width: 100%;
-    height: 50px;
-    margin: 30px 0;
-   
-}
-
-.register-input-box input {
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    border: none;
-    outline: none;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 40px;
-    font-size: 16px;
-    color: #ffffff;
-    padding: 20px 45px 20px 20px;
-
-}
-
-.register-input-box input::placeholder {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.register-input-box .icon {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    translate: 0 -50%;
-    font-size: 16px;
-    color: #ffffff;
-}
-
-form .register-forgot-password {
-    font-size: 14.5px;
-    margin: -15px 0 15px;
-}
-
-.register-forgot-password a {
-    color: #fff;
-    text-decoration: none;
-
-}
-
-.register-forgot-password a:hover {
-    text-decoration: underline;
-}
-
-form button {
-    width: 100%;
-    height: 45px;
-    border: none;
-    outline: none;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 700;
-    background: #ffffff;
-    color: #000000;
-}
-
-form button:hover {
-    background: #f0f0f0;
-}
-
-form .register {
-    font-size: 14.5px;
-    text-align: center;
-    margin: 20px 0 15px;
-    color: #ffffff;
-}
-
-.register p {
-    color: #ffffff;
-}
-
-.register p a {
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.register p a:hover {
-    text-decoration: underline;
+  .pwd-req-grid {
+    flex-direction: column;
+    gap: 6px;
+  }
 }
