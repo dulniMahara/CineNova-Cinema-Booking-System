@@ -8,16 +8,17 @@ const {
   getShowtimeById,  
   getShowtimesByMovie
 } = require('../controllers/showtimeController');
+const { protect, isAdmin } = require('../middlewares/authMiddleware');
 
 router.get('/movie/:movieId', getShowtimesByMovie);
 
 router.route('/')
-  .post(addShowtime)
+  .post(protect, isAdmin, addShowtime)
   .get(getAllShowtimes);
 
 router.route('/:id')
   .get(getShowtimeById)   
-  .put(updateShowtime)   
-  .delete(deleteShowtime);
+  .put(protect, isAdmin, updateShowtime)   
+  .delete(protect, isAdmin, deleteShowtime);
 
 module.exports = router;
