@@ -94,105 +94,162 @@ const AddMovie = () => {
   return (
     <div className="movieform-page">
       <div className="movieform-wrapper">
-        <h1 className="movieform-title">Add New Movie</h1>
+
+        <div className="form-header-bar">
+          <button className="btn-back-link" onClick={() => navigate("/admin/movies")}>
+            ← Back to Movie Management
+          </button>
+          <h1 className="movieform-title">Add New Movie</h1>
+          <p className="movieform-subtitle">Create a new screening entry for CineNova cinemas.</p>
+        </div>
 
         <form className="movieform-form" onSubmit={handleSubmit}>
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            type="text"
-            name="title"
-            value={movieData.title}
-            onChange={handleChange}
-            required
-          />
+          
+          {/* Section 1: Basic Information */}
+          <div className="form-fieldset">
+            <h3 className="fieldset-title">Basic Information</h3>
 
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            value={movieData.description}
-            onChange={handleChange}
-            required
-          />
+            <div className="form-group">
+              <label htmlFor="title">Title <span className="req-star">*</span></label>
+              <input
+                id="title"
+                type="text"
+                name="title"
+                placeholder="e.g. Jurassic World: Rebirth"
+                value={movieData.title}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <label htmlFor="duration">Duration (mins)</label>
-          <input
-            id="duration"
-            type="number"
-            name="duration"
-            value={movieData.duration}
-            onChange={handleChange}
-            required
-          />
+            <div className="form-group">
+              <label htmlFor="description">Description <span className="req-star">*</span></label>
+              <textarea
+                id="description"
+                name="description"
+                placeholder="Synopsis of the movie..."
+                value={movieData.description}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <label>Genre</label>
-          <div className="genre-checkboxes">
-            {GENRES.map((g) => (
-              <label key={g} className="genre-label">
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="duration">Duration (mins) <span className="req-star">*</span></label>
                 <input
-                  type="checkbox"
-                  value={g}
-                  checked={movieData.genre.includes(g)}
-                  onChange={() => handleGenreCheckbox(g)}
+                  id="duration"
+                  type="number"
+                  name="duration"
+                  placeholder="e.g. 128"
+                  value={movieData.duration}
+                  onChange={handleChange}
+                  required
                 />
-                <span>{g}</span>
-              </label>
-            ))}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="rating">Rating (0 - 10) <span className="req-star">*</span></label>
+                <input
+                  id="rating"
+                  type="number"
+                  step="0.1"
+                  name="rating"
+                  placeholder="e.g. 8.2"
+                  value={movieData.rating}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  name="status"
+                  value={movieData.status}
+                  onChange={handleChange}
+                >
+                  <option value="now">Now Showing</option>
+                  <option value="soon">Coming Soon</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Genre <span className="req-star">*</span></label>
+              <div className="genre-checkboxes">
+                {GENRES.map((g) => (
+                  <label key={g} className="genre-label">
+                    <input
+                      type="checkbox"
+                      value={g}
+                      checked={movieData.genre.includes(g)}
+                      onChange={() => handleGenreCheckbox(g)}
+                    />
+                    <span>{g}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <label htmlFor="rating">Rating (0-10)</label>
-          <input
-            id="rating"
-            type="number"
-            step="0.1"
-            name="rating"
-            value={movieData.rating}
-            onChange={handleChange}
-            required
-          />
+          {/* Section 2: Media URLs */}
+          <div className="form-fieldset">
+            <h3 className="fieldset-title">Media & Links</h3>
 
-          <label htmlFor="posterUrl">Poster URL</label>
-          <input
-            id="posterUrl"
-            type="text"
-            name="posterUrl"
-            value={movieData.posterUrl}
-            onChange={handleChange}
-          />
+            <div className="form-group">
+              <label htmlFor="posterUrl">Poster Image URL</label>
+              <input
+                id="posterUrl"
+                type="text"
+                name="posterUrl"
+                placeholder="https://image.tmdb.org/t/p/w500/..."
+                value={movieData.posterUrl}
+                onChange={handleChange}
+              />
+            </div>
 
-          <label htmlFor="bannerUrl">Banner URL</label>
-          <input
-            id="bannerUrl"
-            type="text"
-            name="bannerUrl"
-            value={movieData.bannerUrl}
-            onChange={handleChange}
-          />
+            <div className="form-group">
+              <label htmlFor="bannerUrl">Banner Image URL</label>
+              <input
+                id="bannerUrl"
+                type="text"
+                name="bannerUrl"
+                placeholder="https://image.tmdb.org/t/p/original/..."
+                value={movieData.bannerUrl}
+                onChange={handleChange}
+              />
+            </div>
 
-          <label htmlFor="trailerUrl">Trailer URL</label>
-          <input
-            id="trailerUrl"
-            type="text"
-            name="trailerUrl"
-            value={movieData.trailerUrl}
-            onChange={handleChange}
-          />
+            <div className="form-group">
+              <label htmlFor="trailerUrl">YouTube Trailer URL</label>
+              <input
+                id="trailerUrl"
+                type="text"
+                name="trailerUrl"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={movieData.trailerUrl}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
 
-          <label htmlFor="status">Status</label>
-          <select
-            id="status"
-            name="status"
-            value={movieData.status}
-            onChange={handleChange}
-          >
-            <option value="now">Now Showing</option>
-            <option value="soon">Coming Soon</option>
-          </select>
+          {/* Form Actions */}
+          <div className="form-actions-bar">
+            <button
+              type="button"
+              className="btn-cancel-form"
+              onClick={() => navigate("/admin/movies")}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button type="submit" disabled={loading} className="movieform-submit-btn">
+              {loading ? "Adding Movie..." : "Save & Create Movie"}
+            </button>
+          </div>
 
-          <button type="submit" disabled={loading} className="movieform-submit-btn">
-            {loading ? "Adding..." : "Add Movie"}
-          </button>
         </form>
       </div>
     </div>

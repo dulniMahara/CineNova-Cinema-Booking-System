@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Movie = require("../models/movie");
 const { buildMovieFilter } = require("../utils/filterMovies");
+const { protect, isAdmin } = require("../middlewares/authMiddleware");
 
 // GET all movies 
 router.get("/", async (req, res) => {
@@ -27,8 +28,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// CREATE a new movie
-router.post("/", async (req, res) => {
+// CREATE a new movie (Admin Only)
+router.post("/", protect, isAdmin, async (req, res) => {
   try {
     const movie = new Movie(req.body);
     const savedMovie = await movie.save();
@@ -39,8 +40,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPDATE a movie by ID
-router.put("/:id", async (req, res) => {
+// UPDATE a movie by ID (Admin Only)
+router.put("/:id", protect, isAdmin, async (req, res) => {
   try {
     const updatedMovie = await Movie.findByIdAndUpdate(
       req.params.id,
@@ -55,8 +56,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE a movie by ID
-router.delete("/:id", async (req, res) => {
+// DELETE a movie by ID (Admin Only)
+router.delete("/:id", protect, isAdmin, async (req, res) => {
   try {
     const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
     if (!deletedMovie) return res.status(404).json({ message: "Movie not found" });
