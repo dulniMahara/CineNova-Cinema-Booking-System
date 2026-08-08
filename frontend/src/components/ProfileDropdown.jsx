@@ -5,7 +5,8 @@ import {
   FiBookmark, 
   FiCreditCard, 
   FiKey, 
-  FiLogOut 
+  FiLogOut,
+  FiChevronDown
 } from 'react-icons/fi';
 import Avatar from './Avatar';
 import './ProfileDropdown.css';
@@ -15,9 +16,15 @@ const ProfileDropdown = ({ onLogout }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : {};
 
-  // Close dropdown when clicking outside
+  const getFirstName = (name = "") => {
+    if (!name) return "Member";
+    return name.trim().split(/\s+/)[0];
+  };
+
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -25,8 +32,18 @@ const ProfileDropdown = ({ onLogout }) => {
       }
     };
 
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -48,12 +65,20 @@ const ProfileDropdown = ({ onLogout }) => {
 
   return (
     <div className="profile-dropdown-container" ref={dropdownRef}>
-      <div className="profile-trigger" onClick={() => setIsOpen(!isOpen)} title="Account Menu">
+      {/* Dark Glass Pill Control */}
+      <button 
+        className={`profile-pill-trigger ${isOpen ? 'active' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="User Account Menu"
+        aria-expanded={isOpen}
+      >
         <Avatar name={user.name} size="medium" />
-      </div>
+        <span className="profile-first-name">{getFirstName(user.name)}</span>
+        <FiChevronDown className={`chevron-icon ${isOpen ? 'open' : ''}`} />
+      </button>
 
       {isOpen && (
-        <div className="profile-dropdown">
+        <div className="profile-dropdown" role="menu">
           
           {/* Profile Header */}
           <div className="dropdown-header">
@@ -75,6 +100,7 @@ const ProfileDropdown = ({ onLogout }) => {
             <button 
               className="dropdown-menu-item"
               onClick={() => handleItemClick('/profile')}
+              role="menuitem"
             >
               <FiUser className="menu-icon" />
               <span>My Profile</span>
@@ -83,6 +109,7 @@ const ProfileDropdown = ({ onLogout }) => {
             <button 
               className="dropdown-menu-item"
               onClick={() => handleItemClick('/my-bookings')}
+              role="menuitem"
             >
               <FiBookmark className="menu-icon" />
               <span>My Bookings</span>
@@ -91,6 +118,7 @@ const ProfileDropdown = ({ onLogout }) => {
             <button 
               className="dropdown-menu-item"
               onClick={() => handleItemClick('/my-payments')}
+              role="menuitem"
             >
               <FiCreditCard className="menu-icon" />
               <span>My Payments</span>
@@ -106,6 +134,7 @@ const ProfileDropdown = ({ onLogout }) => {
             <button 
               className="dropdown-menu-item"
               onClick={() => handleItemClick('/profile#change-password')}
+              role="menuitem"
             >
               <FiKey className="menu-icon" />
               <span>Change Password</span>
@@ -119,9 +148,10 @@ const ProfileDropdown = ({ onLogout }) => {
             <button 
               className="dropdown-menu-item logout-item"
               onClick={handleLogout}
+              role="menuitem"
             >
               <FiLogOut className="menu-icon" />
-              <span>Logout</span>
+              <span>Sign Out</span>
             </button>
           </div>
 
