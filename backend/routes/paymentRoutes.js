@@ -10,8 +10,7 @@ const {
 } = require('../controllers/paymentController');
 
 // 2. IMPORT MIDDLEWARE
-// CORRECTED: Pointing to 'authMiddleware' instead of 'auth'
-const { protect } = require('../middlewares/authMiddleware'); 
+const { protect, isAdmin } = require('../middlewares/authMiddleware'); 
 
 // --- USER ROUTES ---
 router.post('/', protect, processPayment);           // Pay & Book
@@ -19,6 +18,6 @@ router.get('/my-payments', protect, getMyPayments);  // History
 router.delete('/my-payments', protect, deleteMyPayments); // Clear History
 
 // --- ADMIN ROUTES ---
-router.get('/all', protect, getAllPayments);         // See all payments
+router.get('/all', protect, isAdmin, getAllPayments);         // See all payments (Admin Only)
 
 module.exports = router;
