@@ -60,12 +60,19 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes loading-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ─── HERO SPOTLIGHT CAROUSEL ─── */
@@ -116,13 +123,11 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(6, 11, 8, 0.45) 0%,
       transparent 20%,
       transparent 70%,
-      rgba(6, 11, 8, 0.85) 100%
-    );
+      rgba(6, 11, 8, 0.85) 100%);
   pointer-events: none;
 }
 
@@ -284,8 +289,17 @@
 }
 
 @keyframes scroll-pulse {
-  0%, 100% { opacity: 0.3; transform: scaleY(1); }
-  50%       { opacity: 1;   transform: scaleY(1.2); }
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleY(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
 }
 
 /* ─── SECTION COMMON ─── */
@@ -296,12 +310,10 @@
 }
 
 .coming-soon-bg {
-  background: linear-gradient(
-    180deg,
-    var(--bg-matte-black) 0%,
-    var(--bg-charcoal) 50%,
-    var(--bg-matte-black) 100%
-  );
+  background: linear-gradient(180deg,
+      var(--bg-matte-black) 0%,
+      var(--bg-charcoal) 50%,
+      var(--bg-matte-black) 100%);
 }
 
 .section-header {
@@ -358,7 +370,9 @@
 }
 
 /* ─── SWIPER ─── */
-.swiper-container-wrapper { position: relative; }
+.swiper-container-wrapper {
+  position: relative;
+}
 
 .premium-swiper {
   padding: 16px 4px 48px 4px !important;
@@ -483,14 +497,12 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.12) 30%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.12) 70%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.12) 30%,
+      rgba(255, 255, 255, 0.22) 50%,
+      rgba(255, 255, 255, 0.12) 70%,
+      transparent 100%);
 }
 
 .experience-card:hover {
@@ -511,11 +523,9 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    rgba(31, 164, 99, 0.12) 0%,
-    rgba(212, 175, 55, 0.08) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(31, 164, 99, 0.12) 0%,
+      rgba(212, 175, 55, 0.08) 100%);
   color: var(--primary-emerald);
   margin-bottom: 26px;
   border: 1px solid rgba(31, 164, 99, 0.2);
@@ -640,6 +650,7 @@
     opacity: 0;
     transform: translateY(28px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -647,8 +658,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
@@ -656,6 +672,7 @@
     opacity: 0;
     transform: scale(0.93);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
