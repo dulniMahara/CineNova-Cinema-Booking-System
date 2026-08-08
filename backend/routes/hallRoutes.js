@@ -5,11 +5,12 @@ const {
   createHall, 
   updateHall, 
   deleteHall 
-} = require('../controllers/hallController'); // Imports must match exports above
+} = require('../controllers/hallController');
+const { protect, isAdmin } = require('../middlewares/authMiddleware');
 
 router.get('/', getHalls);
-router.post('/', createHall);
-router.put('/:id', updateHall);
-router.delete('/:id', deleteHall);
+router.post('/', protect, isAdmin, createHall);
+router.put('/:id', protect, isAdmin, updateHall);
+router.delete('/:id', protect, isAdmin, deleteHall);
 
 module.exports = router;
