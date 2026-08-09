@@ -24,7 +24,7 @@ const ProfileDropdown = ({ onLogout }) => {
     return name.trim().split(/\s+/)[0];
   };
 
-  // Close dropdown when clicking outside or pressing Escape
+  // Close dropdown when clicking outside, pressing Escape, or when another dropdown opens
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -38,13 +38,29 @@ const ProfileDropdown = ({ onLogout }) => {
       }
     };
 
+    const handleCloseOtherDropdowns = (event) => {
+      if (event.detail?.sender !== 'profile') {
+        setIsOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('topbar_close_dropdowns', handleCloseOtherDropdowns);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('topbar_close_dropdowns', handleCloseOtherDropdowns);
     };
   }, []);
+
+  const handleToggle = () => {
+    const nextState = !isOpen;
+    if (nextState) {
+      window.dispatchEvent(new CustomEvent('topbar_close_dropdowns', { detail: { sender: 'profile' } }));
+    }
+    setIsOpen(nextState);
+  };
 
   const handleLogout = () => {
     setIsOpen(false);
@@ -68,7 +84,7 @@ const ProfileDropdown = ({ onLogout }) => {
       {/* Dark Glass Pill Control */}
       <button 
         className={`profile-pill-trigger ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         aria-label="User Account Menu"
         aria-expanded={isOpen}
       >

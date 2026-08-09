@@ -21,6 +21,7 @@ import { FiSearch, FiBell, FiX, FiFilm, FiLogOut, FiUser } from "react-icons/fi"
 import { SearchContext } from "../context/SearchContext";
 import { getMovies } from "../services/movieService";
 import ProfileDropdown from "./ProfileDropdown";
+import AdminNotificationDropdown from "./AdminNotificationDropdown";
 import "./Topbar.css";
 
 const Topbar = () => {
@@ -388,18 +389,22 @@ const Topbar = () => {
 
           {/* 2. Notification Bell Control */}
           {isAuthenticated && (
-            <NavLink
-              to="/notifications"
-              className={`header-action-btn notification-btn ${isNotificationsPage ? 'active' : ''}`}
-              aria-label="Open notifications"
-            >
-              <FiBell size={18} />
-              {unreadCount > 0 && (
-                <span className="notification-badge">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </NavLink>
+            role === "admin" ? (
+              <AdminNotificationDropdown />
+            ) : (
+              <NavLink
+                to="/notifications"
+                className={`header-action-btn notification-btn ${isNotificationsPage ? 'active' : ''}`}
+                aria-label="Open notifications"
+              >
+                <FiBell size={18} />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </NavLink>
+            )
           )}
 
           {/* 3. Profile Dropdown or Login Button */}

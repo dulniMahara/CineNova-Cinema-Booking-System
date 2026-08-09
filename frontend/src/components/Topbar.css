@@ -121,20 +121,56 @@
 }
 
 @media (max-width: 1450px) {
-  .logo { flex: 0 0 160px; }
-  .logo-text { font-size: 1.5rem; }
-  .logo-tagline { font-size: 0.52rem; letter-spacing: 1.5px; }
-  .nav-links { gap: 12px; }
-  .nav-links a { font-size: 0.8rem; padding: 5px 6px; letter-spacing: 0.4px; }
-  .topbar-right { flex: 0 0 170px; }
+  .logo {
+    flex: 0 0 160px;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+  }
+
+  .logo-tagline {
+    font-size: 0.52rem;
+    letter-spacing: 1.5px;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-links a {
+    font-size: 0.8rem;
+    padding: 5px 6px;
+    letter-spacing: 0.4px;
+  }
+
+  .topbar-right {
+    flex: 0 0 170px;
+  }
 }
 
 @media (max-width: 1200px) {
-  .topbar { padding: 0 16px; }
-  .topbar.home-topbar.scrolled { padding: 0 16px; }
-  .logo { flex: 0 0 140px; }
-  .nav-links { gap: 6px; }
-  .nav-links a { font-size: 0.74rem; padding: 4px 3px; letter-spacing: 0.2px; }
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .topbar.home-topbar.scrolled {
+    padding: 0 16px;
+  }
+
+  .logo {
+    flex: 0 0 140px;
+  }
+
+  .nav-links {
+    gap: 6px;
+  }
+
+  .nav-links a {
+    font-size: 0.74rem;
+    padding: 4px 3px;
+    letter-spacing: 0.2px;
+  }
 }
 
 /* Animated underline using pseudo-element */

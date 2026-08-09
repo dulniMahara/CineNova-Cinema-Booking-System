@@ -219,3 +219,140 @@ exports.getAdminDashboard = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get recent system activity notifications for Admin Topbar
+ * GET /api/admin/notifications
+ */
+exports.getAdminNotifications = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+
+    // Parallel query for recent operational data
+    const [recentBookings, recentPayments, recentUsers] = await Promise.all([
+      Booking.find()
+        .populate('userId', 'name email')
+        .populate({
+          path: 'showtimeId',
+          populate: { path: 'movie', select: 'title' }
+        })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+
+      Payment.find()
+        .populate('userId', 'name email')
+        .populate({
+          path: 'bookingId',
+          populate: {
+            path: 'showtimeId',
+            populate: { path: 'movie', select: 'title' }
+          }
+        })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+
+      User.find({ role: { $ne: 'admin' } })
+        .select('name email role createdAt')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean()
+    ]);
+
+    const notifications = [];
+
+    // 1. Process Recent Bookings
+    (recentBookings || []).forEach((b) => {
+      const customerName = b.userId?.name || 'Customer';
+      const movieTitle = b.showtimeId?.movie?.title || 'Movie Screening';
+      
+      const seatsText = Array.isArray(b.seatDetails) && b.seatDetails.length > 0
+        ? b.seatDetails.map(s => `${s.row}${s.number}`).join(', ')
+        : (b.seatIds?.length ? `${b.seatIds.length} seat(s)` : 'Seats Reserved');
+        
+      const amount = b.totalPrice || 0;
+      const refCode = b.bookingReference || (b._id ? `#CN-${b._id.toString().slice(-6).toUpperCase()}` : '');
+
+      const isCounterBooking = String(b.status || '').toLowerCase().includes('counter') ||
+                               String(b.status || '').toLowerCase() === 'pending';
+
+      if (isCounterBooking) {
+        notifications.push({
+          _id: `booking-counter-${b._id}`,
+          type: 'pay_at_counter',
+          title: 'Pay at Counter Booking',
+          description: `Pay at counter reserved for "${movieTitle}" by ${customerName} (${seatsText}) — Rs. ${amount.toLocaleString()}`,
+          meta: { refCode, customerName, movieTitle, seatsText, amount },
+          timestamp: b.createdAt
+        });
+      } else {
+        notifications.push({
+          _id: `booking-${b._id}`,
+          type: 'new_booking',
+          title: 'New Booking',
+          description: `New booking for "${movieTitle}" by ${customerName} (${seatsText}) — Rs. ${amount.toLocaleString()}`,
+          meta: { refCode, customerName, movieTitle, seatsText, amount },
+          timestamp: b.createdAt
+        });
+      }
+    });
+
+    // 2. Process Recent Payments
+    (recentPayments || []).forEach((p) => {
+      const customerName = p.userId?.name || 'Customer';
+      const method = p.paymentMethod || 'Online';
+      const isCounter = String(method).toLowerCase().includes('counter') || String(p.status).toLowerCase() === 'pending';
+      const movieTitle = p.bookingId?.showtimeId?.movie?.title;
+
+      if (isCounter) {
+        notifications.push({
+          _id: `payment-${p._id}`,
+          type: 'pay_at_counter',
+          title: 'Pay at Counter Awaiting',
+          description: `Pay at counter payment of Rs. ${(p.amount || 0).toLocaleString()} awaiting for ${customerName}${movieTitle ? ` ("${movieTitle}")` : ''}`,
+          meta: { customerName, amount: p.amount, method },
+          timestamp: p.createdAt || p.updatedAt
+        });
+      } else {
+        notifications.push({
+          _id: `payment-${p._id}`,
+          type: 'payment',
+          title: 'Payment Received',
+          description: `Payment of Rs. ${(p.amount || 0).toLocaleString()} received via ${method} (${customerName})`,
+          meta: { customerName, amount: p.amount, method },
+          timestamp: p.createdAt || p.updatedAt
+        });
+      }
+    });
+
+    // 3. Process Recent User Registrations
+    (recentUsers || []).forEach((u) => {
+      notifications.push({
+        _id: `user-${u._id}`,
+        type: 'new_customer',
+        title: 'New Customer Registered',
+        description: `New customer account registered: ${u.name} (${u.email})`,
+        meta: { name: u.name, email: u.email },
+        timestamp: u.createdAt
+      });
+    });
+
+    // Sort all events newest first
+    notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Top recent items up to limit
+    const topNotifications = notifications.slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      data: topNotifications
+    });
+  } catch (error) {
+    console.error("Error generating admin notifications:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to fetch admin notifications."
+    });
+  }
+};

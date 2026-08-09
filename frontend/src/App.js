@@ -33,6 +33,7 @@ import './pages/Booking.css';
 import PaymentPage from './pages/PaymentPage';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminNotifications from './pages/admin/AdminNotifications';
 import PaymentHistory from './pages/PaymentHistory';
 import Notifications from "./pages/customers/Notifications";
 import EmailVerification from "./pages/EmailVerification";
@@ -221,12 +222,15 @@ function App() {
             }
           />
 
+          {/* Admin Notifications Route */}
           <Route
-            path="*"
+            path="/admin/notifications"
             element={
-              <PageLayout>
-                <h2>Page not found</h2>
-              </PageLayout>
+              <ProtectedRoute roleRequired="admin">
+                <PageLayout isAdmin={true}>
+                  <AdminNotifications />
+                </PageLayout>
+              </ProtectedRoute>
             }
           />
 
@@ -286,6 +290,13 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/admin/payments"
+            element={
+              <ProtectedRoute roleRequired="admin">
+                <AdminPayments />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/payments"
             element={
               <ProtectedRoute roleRequired="admin">
@@ -302,7 +313,6 @@ function App() {
             }
           />
 
-          {/* --- NEW ROUTE (Added at end to preserve order) --- */}
           <Route
             path="/notifications"
             element={
@@ -311,6 +321,16 @@ function App() {
                   <Notifications />
                 </PageLayout>
               </ProtectedRoute>
+            }
+          />
+
+          {/* Catch-all Page Not Found Route (MUST be at the end) */}
+          <Route
+            path="*"
+            element={
+              <PageLayout>
+                <h2>Page not found</h2>
+              </PageLayout>
             }
           />
 
