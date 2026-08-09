@@ -138,7 +138,7 @@ const seedMovies = async () => {
       genre: ["Action", "Adventure", "Fantasy"],
       rating: 8.2,
       tmdbSearch: "Spider-Man: Brand New Day",
-      status: "soon"
+      status: "now"
     },
     {
       title: "Avengers: Doomsday",
@@ -158,6 +158,16 @@ const seedMovies = async () => {
       genre: ["Horror", "Thriller"],
       rating: 6.8,
       tmdbSearch: "Insidious",
+      status: "soon"
+    },
+    {
+      title: "Avatar: Fire and Ash",
+      description:
+        "In the wake of the devastating war against the RDA, Jake Sully and Neytiri face a new threat on Pandora: the Ash People, a violent and power-hungry Na'vi tribe led by the ruthless Varang.",
+      duration: 190,
+      genre: ["Action", "Adventure", "Sci-Fi", "Fantasy"],
+      rating: 8.5,
+      tmdbSearch: "Avatar: Fire and Ash",
       status: "soon"
     }
   ];
