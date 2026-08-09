@@ -57,12 +57,35 @@ const HallManager = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [viewingHall, hallToDelete]);
 
-  // Grid auto-generation for new halls
+  // Dynamic grid resizing/generation for new and existing halls
   useEffect(() => {
-    if (!editId) {
-      generateGrid(rows, cols);
-    }
-  }, [rows, cols, editId]);
+    const targetRows = Math.min(Math.max(Number(rows) || 10, 1), 20);
+    const targetCols = Math.min(Math.max(Number(cols) || 12, 1), 20);
+
+    setGrid((prevGrid) => {
+      if (!Array.isArray(prevGrid) || prevGrid.length === 0) {
+        return Array(targetRows).fill().map(() => Array(targetCols).fill(1));
+      }
+
+      if (prevGrid.length === targetRows && prevGrid[0] && prevGrid[0].length === targetCols) {
+        return prevGrid;
+      }
+
+      const newGrid = [];
+      for (let r = 0; r < targetRows; r++) {
+        const rowArr = [];
+        for (let c = 0; c < targetCols; c++) {
+          if (prevGrid[r] && prevGrid[r][c] !== undefined) {
+            rowArr.push(prevGrid[r][c]);
+          } else {
+            rowArr.push(1);
+          }
+        }
+        newGrid.push(rowArr);
+      }
+      return newGrid;
+    });
+  }, [rows, cols]);
 
   const getHallLayoutInfo = (hall) => {
     if (!hall) return null;
@@ -136,18 +159,19 @@ const HallManager = () => {
   };
 
   const handleEdit = (hall) => {
-    setEditId(hall._id);
-    setName(hall.name);
+    const targetHall = halls.find((h) => h._id === hall._id) || hall;
+    setEditId(targetHall._id);
+    setName(targetHall.name);
     setFormError("");
 
-    const safeRows = hall.totalRows || 10;
-    const safeCols = hall.totalCols || 12;
+    const safeRows = targetHall.totalRows || (targetHall.seatLayout ? targetHall.seatLayout.length : 10);
+    const safeCols = targetHall.totalCols || (targetHall.seatLayout && targetHall.seatLayout[0] ? targetHall.seatLayout[0].length : 12);
 
     setRows(safeRows);
     setCols(safeCols);
 
-    if (hall.seatLayout && hall.seatLayout.length > 0) {
-      setGrid(hall.seatLayout);
+    if (targetHall.seatLayout && targetHall.seatLayout.length > 0) {
+      setGrid(targetHall.seatLayout);
     } else {
       generateGrid(safeRows, safeCols);
     }
@@ -639,7 +663,8 @@ const HallManager = () => {
 
       {/* Read-Only View Layout Modal */}
       {viewingHall && (() => {
-        const info = getHallLayoutInfo(viewingHall);
+        const currentHall = halls.find((h) => h._id === viewingHall._id) || viewingHall;
+        const info = getHallLayoutInfo(currentHall);
 
         return (
           <div className="custom-modal-backdrop" onClick={() => setViewingHall(null)}>
@@ -655,7 +680,7 @@ const HallManager = () => {
               </button>
 
               <div className="modal-header-block">
-                <h3 className="modal-title" id="hall-layout-title">{viewingHall.name}</h3>
+                <h3 className="modal-title" id="hall-layout-title">{currentHall.name}</h3>
                 {info && !info.error && (
                   <span className={`layout-type-badge ${info.isStandardFallback ? 'standard' : 'custom'}`}>
                     {info.isStandardFallback ? "Standard Layout" : "Custom Layout"}
@@ -696,48 +721,44 @@ const HallManager = () => {
                     <div className="layout-canvas-wrapper">
 
                       {/* Column Headers */}
-                      <div className="col-headers-row" style={{ paddingLeft: "22px", gridTemplateColumns: `repeat(${info.cols}, 24px)` }}>
+                      <div className="col-headers-row" style={{ paddingLeft: "30px", gridTemplateColumns: `repeat(${info.cols}, 24px)` }}>
                         {Array.from({ length: info.cols }, (_, i) => (
                           <span key={i} className="col-header-num">{i + 1}</span>
                         ))}
                       </div>
 
-                      <div className="grid-with-row-labels">
-                        {/* Row Labels Column */}
-                        <div className="row-labels-col">
-                          {Array.from({ length: info.rows }, (_, i) => (
-                            <span key={i} className="row-label-char">{String.fromCharCode(65 + i)}</span>
-                          ))}
-                        </div>
-
-                        {/* 2D Seat Grid */}
-                        <div
-                          className="editor-visual-grid read-only"
-                          style={{
-                            gridTemplateColumns: `repeat(${info.cols}, 24px)`
-                          }}
-                        >
-                          {info.layoutGrid.map((row, rIndex) => {
-                            const rowLetter = String.fromCharCode(65 + rIndex);
-                            return row.map((cell, cIndex) => {
-                              const seatNum = cIndex + 1;
-                              const seatLabel = `${rowLetter}${seatNum}`;
-                              return (
-                                <div
-                                  key={`${rIndex}-${cIndex}`}
-                                  className={`editor-seat-cell read-only ${cell === 1 ? "seat-active" : "seat-aisle"}`}
-                                  title={cell === 1 ? `Row ${rowLetter}, Seat ${seatNum} (${seatLabel})` : `Row ${rowLetter}, Position ${seatNum} (Aisle)`}
-                                >
-                                  {cell === 1 ? (
-                                    <span className="seat-number-label">{seatLabel}</span>
-                                  ) : (
-                                    <span className="aisle-icon">✕</span>
-                                  )}
-                                </div>
-                              );
-                            });
-                          })}
-                        </div>
+                      {/* Read-Only Grid Container with Row-by-Row Alignment */}
+                      <div className="read-only-rows-container">
+                        {info.layoutGrid.map((row, rIndex) => {
+                          const rowLetter = String.fromCharCode(65 + rIndex);
+                          return (
+                            <div key={rIndex} className="read-only-row">
+                              <span className="row-label-char">{rowLetter}</span>
+                              <div
+                                className="read-only-seat-row"
+                                style={{ gridTemplateColumns: `repeat(${info.cols}, 24px)` }}
+                              >
+                                {row.map((cell, cIndex) => {
+                                  const seatNum = cIndex + 1;
+                                  const seatLabel = `${rowLetter}${seatNum}`;
+                                  return (
+                                    <div
+                                      key={`${rIndex}-${cIndex}`}
+                                      className={`editor-seat-cell read-only ${cell === 1 ? "seat-active" : "seat-aisle"}`}
+                                      title={cell === 1 ? `Row ${rowLetter}, Seat ${seatNum} (${seatLabel})` : `Row ${rowLetter}, Position ${seatNum} (Aisle)`}
+                                    >
+                                      {cell === 1 ? (
+                                        <span className="seat-number-label">{seatLabel}</span>
+                                      ) : (
+                                        <span className="aisle-icon">✕</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
 
                     </div>
