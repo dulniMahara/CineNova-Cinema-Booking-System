@@ -43,33 +43,57 @@ router.get('/:showtimeId', async (req, res) => {
 
         let seats = await Seat.find({ showtimeId });
 
-        if (seats.length > 0) {
-            return res.json(seats);
+        if (seats.length === 0) {
+            console.log(`No seats found for ${showtimeId}. Auto-generating...`);
+            const showtime = await Showtime.findById(showtimeId);
+            if (!showtime) {
+                return res.status(404).json({ error: "Showtime not found" });
+            }
+            const hall = await Hall.findById(showtime.hall);
+            if (!hall || !hall.seatLayout) {
+                return res.json([]);
+            }
+            const newSeats = await generateSeats(showtime, hall);
+            if (newSeats.length > 0) {
+                await Seat.insertMany(newSeats);
+                console.log(`Auto-generated ${newSeats.length} seats.`);
+                seats = newSeats;
+            }
         }
 
-        console.log(`No seats found for ${showtimeId}. Auto-generating...`);
+        // Cross-reference confirmed Booking records for this showtimeId
+        const Booking = require('../models/Booking');
+        const activeBookings = await Booking.find({
+            showtimeId,
+            status: { $ne: 'Cancelled' }
+        });
 
-        const showtime = await Showtime.findById(showtimeId);
+        if (activeBookings.length > 0) {
+            const bookedSeatIdSet = new Set();
+            activeBookings.forEach(b => {
+                if (Array.isArray(b.seatIds)) {
+                    b.seatIds.forEach(id => bookedSeatIdSet.add(String(id)));
+                }
+                if (Array.isArray(b.seatDetails)) {
+                    b.seatDetails.forEach(sd => {
+                        if (sd.seatId) bookedSeatIdSet.add(String(sd.seatId));
+                    });
+                }
+            });
 
-        if (!showtime) {
-            return res.status(404).json({ error: "Showtime not found" });
+            if (bookedSeatIdSet.size > 0) {
+                seats = seats.map(s => {
+                    const sIdStr = String(s._id);
+                    if (bookedSeatIdSet.has(sIdStr) && s.status !== 'booked') {
+                        const sObj = typeof s.toObject === 'function' ? s.toObject() : s;
+                        return { ...sObj, status: 'booked' };
+                    }
+                    return s;
+                });
+            }
         }
 
-        const hall = await Hall.findById(showtime.hall);
-
-        if (!hall || !hall.seatLayout) {
-            return res.json([]);
-        }
-
-        const newSeats = await generateSeats(showtime, hall);
-
-        if (newSeats.length > 0) {
-            await Seat.insertMany(newSeats);
-            console.log(`Auto-generated ${newSeats.length} seats.`);
-            return res.json(newSeats);
-        }
-
-        return res.json([]);
+        return res.json(seats);
 
     } catch (err) {
         console.error("SEAT FETCH ERROR:", err);

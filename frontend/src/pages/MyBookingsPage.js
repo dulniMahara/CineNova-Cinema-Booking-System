@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import API from '../services/api';
 import PageLayout from '../components/PageLayout';
 import {
   FiFilm,
@@ -35,17 +35,16 @@ const MyBookingsPage = () => {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!userId) {
-        setLoading(false);
-        return;
-      }
+      setLoading(true);
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/bookings/user/${userId}`);
+        const endpoint = userId ? `/bookings/user/${userId}` : '/bookings/user/me';
+        const res = await API.get(endpoint);
         const data = Array.isArray(res.data) ? res.data : res.data.bookings || [];
         const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setHistory(sortedData);
       } catch (err) {
         console.error("Error fetching bookings:", err);
+        setHistory([]);
       } finally {
         setLoading(false);
       }
@@ -57,7 +56,7 @@ const MyBookingsPage = () => {
   const executeCancel = async (id) => {
     setActionLoading(true);
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/bookings/${id}`);
+      await API.delete(`/bookings/${id}`);
       setHistory(history.map(b =>
         b._id === id ? { ...b, status: 'Cancelled' } : b
       ));
@@ -74,7 +73,7 @@ const MyBookingsPage = () => {
   const executeClearHistory = async () => {
     setActionLoading(true);
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/bookings/clear-history`, { userId });
+      await API.post('/bookings/clear-history', { userId });
       setShowClearModal(false);
       window.location.reload();
     } catch (err) {

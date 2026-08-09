@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -102,6 +102,7 @@ const BookingSuccess = () => {
   const location = useLocation();
   const { bookingId } = useParams();
   const state = location.state || {};
+  const successWrapperRef = useRef(null);
 
   const [bookingData, setBookingData] = useState(state.booking || null);
   const [loading, setLoading] = useState(!state.booking && !!(bookingId || state.bookingRef || state.bookingId));
@@ -112,8 +113,22 @@ const BookingSuccess = () => {
   const isObjectId = (val) => typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, [bookingId]);
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      if (successWrapperRef.current) {
+        successWrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+    scrollToTop();
+    const timer1 = setTimeout(scrollToTop, 50);
+    const timer2 = setTimeout(scrollToTop, 200);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [bookingId, loading, bookingData]);
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -393,7 +408,7 @@ const BookingSuccess = () => {
 
   // --- CONFIRMED BOOKING TICKET VIEW ---
   return (
-    <div className="booking-success-wrapper">
+    <div ref={successWrapperRef} className="booking-success-wrapper">
       <div className="success-container">
 
         {/* Top Header / Back Navigation */}

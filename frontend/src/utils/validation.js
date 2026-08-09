@@ -47,7 +47,7 @@ export const validatePassword = (password) => {
   const hasUpper = /[A-Z]/.test(pwd);
   const hasLower = /[a-z]/.test(pwd);
   const hasNumber = /[0-9]/.test(pwd);
-  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd);
+  const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd);
 
   if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
     return { 
@@ -77,21 +77,17 @@ export const validateConfirmPassword = (password, confirmPassword) => {
  * Formats supported: 07XXXXXXXX, +947XXXXXXXX, 947XXXXXXXX
  */
 export const validateSriLankanPhone = (phone) => {
-  if (!phone) {
-    return { valid: false, message: "Please enter a valid Sri Lankan mobile number." };
+  const digits = String(phone || "").replace(/\D/g, "");
+
+  if (!digits) {
+    return { valid: false, message: "Please enter a valid 10-digit mobile number." };
   }
 
-  const clean = String(phone).replace(/[\s-]/g, "");
-
-  const isLocal = /^07\d{8}$/.test(clean);
-  const isIntlWithPlus = /^\+947\d{8}$/.test(clean);
-  const isIntlNoPlus = /^947\d{8}$/.test(clean);
-
-  if (isLocal || isIntlWithPlus || isIntlNoPlus) {
-    return { valid: true, message: "" };
+  if (digits.length !== 10) {
+    return { valid: false, message: "Please enter a valid 10-digit mobile number." };
   }
 
-  return { valid: false, message: "Please enter a valid Sri Lankan mobile number." };
+  return { valid: true, message: "", clean: digits };
 };
 
 /**

@@ -34,6 +34,47 @@ exports.processPayment = async (req, res) => {
 
             // Fetch actual seat details to store permanently
             const seatObjects = await Seat.find({ _id: { $in: seats } });
+            if (seatObjects.length !== seats.length) {
+                return res.status(400).json({ success: false, message: "One or more selected seats were not found." });
+            }
+
+            const invalidShowtimeSeat = seatObjects.find(s => String(s.showtimeId) !== String(showtimeId));
+            if (invalidShowtimeSeat) {
+                return res.status(400).json({ success: false, message: "Selected seats do not match the specified showtime." });
+            }
+
+            const alreadyBookedSeat = seatObjects.find(s => s.status === 'booked' || s.status === 'locked');
+            if (alreadyBookedSeat) {
+                return res.status(400).json({ success: false, message: "One or more selected seats are no longer available. Please choose different seats." });
+            }
+
+            const existingBookingConflict = await Booking.findOne({
+                showtimeId,
+                status: { $ne: 'Cancelled' },
+                $or: [
+                    { seatIds: { $in: seats } },
+                    { 'seatDetails.seatId': { $in: seats } }
+                ]
+            });
+
+            if (existingBookingConflict) {
+                return res.status(400).json({ success: false, message: "One or more selected seats are no longer available. Please choose different seats." });
+            }
+
+            // Atomic Seat Status Locking
+            const updateResult = await Seat.updateMany(
+                { _id: { $in: seats }, status: { $ne: 'booked' } },
+                { $set: { status: 'booked' } }
+            );
+
+            if (updateResult.modifiedCount !== seats.length) {
+                await Seat.updateMany(
+                    { _id: { $in: seats }, status: 'booked' },
+                    { $set: { status: 'available' } }
+                );
+                return res.status(400).json({ success: false, message: "One or more selected seats are no longer available. Please choose different seats." });
+            }
+
             const seatDetails = seatObjects.map(s => ({
                 row: s.row,
                 number: s.number,
@@ -45,8 +86,8 @@ exports.processPayment = async (req, res) => {
             const newBooking = new Booking({
                 userId: req.user._id,
                 showtimeId,
-                seatIds: seats,  // FIX: Use seatIds instead of seats
-                seatDetails,     // FIX: Store seat details permanently
+                seatIds: seats,
+                seatDetails,
                 totalPrice: amount,
                 status: 'Confirmed' 
             });
@@ -55,14 +96,10 @@ exports.processPayment = async (req, res) => {
             bookingId = savedBooking._id; 
             console.log("3. New Booking Created:", bookingId);
 
-            // B. CRITICAL: Update the Showtime and Seats to mark as "Booked"
+            // B. Update the Showtime bookedSeats array
             await Showtime.findByIdAndUpdate(showtimeId, {
-                $push: { bookedSeats: { $each: seats } } 
+                $addToSet: { bookedSeats: { $each: seats } } 
             });
-            await Seat.updateMany(
-                { _id: { $in: seats } },
-                { $set: { status: 'booked' } }
-            );
             console.log("4. Seats marked as booked in Showtime and Seat collection:", seats);
         }
 

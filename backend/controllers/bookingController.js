@@ -173,11 +173,15 @@ exports.getUserBookings = async (req, res) => {
     try {
         let queryUserId = req.params.userId;
 
-        // Verify if passed user ID exists, else fallback to current user or active customer
+        if (req.user) {
+            if (req.user.role !== 'admin' || queryUserId === 'me' || !mongoose.Types.ObjectId.isValid(queryUserId)) {
+                queryUserId = req.user._id || req.user.id;
+            }
+        }
+
         const userExists = mongoose.Types.ObjectId.isValid(queryUserId) ? await User.findById(queryUserId) : null;
-        if (!userExists) {
-            const fallbackUser = await User.findOne({ role: 'customer' });
-            if (fallbackUser) queryUserId = fallbackUser._id;
+        if (!userExists && req.user) {
+            queryUserId = req.user._id || req.user.id;
         }
 
         console.log("🔍 CHECKING HISTORY FOR USER:", queryUserId);
@@ -283,6 +287,11 @@ exports.cancelBooking = async (req, res) => {
             { _id: { $in: bookingToCancel.seatIds } },
             { $set: { status: 'available' } }
         );
+        if (bookingToCancel.showtimeId) {
+            await Showtime.findByIdAndUpdate(bookingToCancel.showtimeId, {
+                $pull: { bookedSeats: { $in: bookingToCancel.seatIds } }
+            });
+        }
 
         // 1. Create Notification
         const message = `Booking Cancelled. Your seats have been unlocked and refunded. (ID: ${bookingToCancel._id})`;

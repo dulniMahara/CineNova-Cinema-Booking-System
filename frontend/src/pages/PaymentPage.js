@@ -32,7 +32,6 @@ const PaymentPage = () => {
     showtime,
     date,
     hall,
-    ticketPrice,
     paymentMethod
   } = location.state || {};
 
@@ -174,9 +173,10 @@ const PaymentPage = () => {
   };
 
   const handleMobileNumberChange = (val) => {
-    setMobileBanking(prev => ({ ...prev, mobileNumber: val }));
+    const cleanDigits = String(val || "").replace(/\D/g, "").slice(0, 10);
+    setMobileBanking(prev => ({ ...prev, mobileNumber: cleanDigits }));
     if (fieldErrors.mobileNumber) {
-      const res = validateSriLankanPhone(val);
+      const res = validateSriLankanPhone(cleanDigits);
       setFieldErrors(prev => ({ ...prev, mobileNumber: res.valid ? '' : res.message }));
     }
   };
@@ -497,10 +497,11 @@ const PaymentPage = () => {
                   id="mobileNumber"
                   ref={mobileNumberRef}
                   type="tel"
-                  inputMode="tel"
+                  inputMode="numeric"
+                  maxLength={10}
                   required
                   autoComplete="tel"
-                  placeholder="0771234567 or +94771234567"
+                  placeholder="0771234567"
                   className={`form-input ${fieldErrors.mobileNumber ? 'input-error' : ''}`}
                   value={mobileBanking.mobileNumber}
                   onChange={(e) => handleMobileNumberChange(e.target.value)}
