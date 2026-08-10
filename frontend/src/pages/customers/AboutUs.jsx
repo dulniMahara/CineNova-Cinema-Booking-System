@@ -67,8 +67,10 @@ const AboutUs = () => {
 
             {/* Story Text Content */}
             <div className="story-text-column">
-              <span className="section-subtitle">OUR JOURNEY</span>
-              <h2 className="section-title">Crafted for Passionate Movie Lovers</h2>
+              <div className="about-header-left">
+                <span className="about-subtitle">OUR JOURNEY</span>
+                <h2 className="about-title">Crafted for Passionate Movie Lovers</h2>
+              </div>
               <p className="story-paragraph">
                 Founded with a vision to revolutionize motion picture exhibition, CineNova has grown into Sri Lanka's premiere destination for blockbuster cinema.
               </p>
@@ -96,10 +98,10 @@ const AboutUs = () => {
       {/* 3. WHAT MAKES US SPECIAL */}
       <section className="about-section special-section">
         <div className="about-container">
-          <div className="section-header-center">
-            <span className="section-subtitle">THE CINENOVA ADVANTAGE</span>
-            <h2 className="section-title">What Makes Us Special</h2>
-            <p className="section-desc">Designed from the ground up to deliver perfection in every single frame.</p>
+          <div className="about-header-center">
+            <span className="about-subtitle">THE CINENOVA ADVANTAGE</span>
+            <h2 className="about-title">What Makes Us Special</h2>
+            <p className="about-desc">Designed from the ground up to deliver perfection in every single frame.</p>
           </div>
 
           <div className="special-cards-grid">
@@ -200,7 +202,7 @@ const AboutUs = () => {
         <div className="about-container">
           <div className="mission-card">
             <div className="mission-quote-mark">“</div>
-            <span className="section-subtitle">OUR GUIDING PURPOSE</span>
+            <span className="about-subtitle">OUR GUIDING PURPOSE</span>
             <h2 className="mission-title">Our Mission</h2>
             <blockquote className="mission-quote">
               "To create magical moments and unforgettable memories by delivering world-class cinema experiences that inspire, entertain, and unite audiences through the pure power of storytelling."
@@ -213,10 +215,10 @@ const AboutUs = () => {
       {/* 6. GET IN TOUCH */}
       <section className="about-section contact-section">
         <div className="about-container">
-          <div className="section-header-center">
-            <span className="section-subtitle">WE'RE HERE FOR YOU</span>
-            <h2 className="section-title">Get In Touch</h2>
-            <p className="section-desc">Have questions or feedback? Connect with our dedicated guest service team.</p>
+          <div className="about-header-center">
+            <span className="about-subtitle">WE'RE HERE FOR YOU</span>
+            <h2 className="about-title">Get In Touch</h2>
+            <p className="about-desc">Have questions or feedback? Connect with our dedicated guest service team.</p>
           </div>
 
           <div className="contact-cards-grid">
