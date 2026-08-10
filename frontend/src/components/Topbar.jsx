@@ -79,10 +79,19 @@ const Topbar = () => {
     };
 
     fetchUnreadCount();
-    
+
+    const handleReadStateUpdate = () => {
+      fetchUnreadCount();
+    };
+
+    window.addEventListener("customer_notif_read_updated", handleReadStateUpdate);
+
     // Poll every 30s to keep sync
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("customer_notif_read_updated", handleReadStateUpdate);
+    };
   }, [isAuthenticated, location.pathname]); 
 
   // 3. Socket Connection (New)

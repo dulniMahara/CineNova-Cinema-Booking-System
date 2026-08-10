@@ -42,6 +42,22 @@ const markAsRead = async (req, res) => {
 };
 
 /**
+ * Mark all notifications as read for the logged-in user
+ */
+const markAllAsRead = async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.user._id, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.json({ message: 'All notifications marked as read' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
  * Create notification (DB + real-time)
  */
 const createNotification = async (req, res) => {
@@ -114,6 +130,7 @@ const getUnreadCount = async (req, res) => {
 module.exports = {
   getMyNotifications,
   markAsRead,
+  markAllAsRead,
   createNotification,
   deleteNotification,
   getUnreadCount

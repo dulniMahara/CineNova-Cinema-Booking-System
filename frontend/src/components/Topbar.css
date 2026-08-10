@@ -143,10 +143,6 @@
     padding: 5px 6px;
     letter-spacing: 0.4px;
   }
-
-  .topbar-right {
-    flex: 0 0 170px;
-  }
 }
 
 @media (max-width: 1200px) {
@@ -206,10 +202,11 @@
 
 /* Right-side Profile & Action Group */
 .topbar-right {
-  flex: 0 0 230px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-left: auto;
   position: relative;
   padding-right: 4px;
   overflow: visible !important;

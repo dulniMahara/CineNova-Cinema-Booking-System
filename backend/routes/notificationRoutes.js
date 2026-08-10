@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   getMyNotifications,
   markAsRead,
+  markAllAsRead,
   getUnreadCount,
   createNotification,
   deleteNotification
@@ -24,6 +25,13 @@ router.get("/my", protect, getMyNotifications);
  * @access  Private
  */
 router.get("/unread-count", protect, getUnreadCount);
+
+/**
+ * @route   PUT /api/notifications/read-all
+ * @desc    Mark all unread notifications as read for logged-in user
+ * @access  Private
+ */
+router.put("/read-all", protect, markAllAsRead);
 
 /**
  * @route   PUT /api/notifications/:id/read

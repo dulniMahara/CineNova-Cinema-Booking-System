@@ -2,6 +2,7 @@ const Notification = require("../../models/Notification");
 const {
   getMyNotifications,
   markAsRead,
+  markAllAsRead,
   deleteNotification
 } = require("../../controllers/notificationController");
 
@@ -62,6 +63,28 @@ describe("Notification Controller Unit Tests", () => {
     expect(Notification.findById).toHaveBeenCalledWith("notif123");
     expect(mockNotification.save).toHaveBeenCalled();
     expect(res.json).toHaveBeenCalled();
+  });
+
+  // ✅ 2b. Mark all as read
+  it("should mark all unread notifications as read for logged-in user", async () => {
+    const req = {
+      user: { _id: "user123" }
+    };
+
+    const res = {
+      json: jest.fn(),
+      status: jest.fn().mockReturnThis()
+    };
+
+    Notification.updateMany.mockResolvedValue({ modifiedCount: 3 });
+
+    await markAllAsRead(req, res);
+
+    expect(Notification.updateMany).toHaveBeenCalledWith(
+      { userId: "user123", isRead: false },
+      { $set: { isRead: true } }
+    );
+    expect(res.json).toHaveBeenCalledWith({ message: "All notifications marked as read" });
   });
 
   // ✅ 3. Delete notification

@@ -39,8 +39,26 @@ const Notifications = () => {
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/notifications/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setNotifications(res.data);
+      const data = res.data || [];
+      setNotifications(data);
       setLoading(false);
+
+      // Check if any unread notifications exist
+      const hasUnread = data.some((n) => !n.isRead);
+      if (hasUnread) {
+        // Mark all unread notifications as read in database
+        await axios.put(
+          `${process.env.REACT_APP_API_URL}/notifications/read-all`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // Update local state so all notifications show read state without deleting
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+
+        // Notify Topbar to clear unread badge immediately
+        window.dispatchEvent(new Event("customer_notif_read_updated"));
+      }
     } catch (err) {
       console.error(err);
       setLoading(false);
@@ -99,7 +117,7 @@ const Notifications = () => {
 
         {notifications.length === 0 ? (
           <div className="notif-empty">
-            <MdDrafts size={60} color="#444" />
+            <MdDrafts size={60} color="rgba(31, 164, 99, 0.45)" />
             <p>No new notifications.</p>
           </div>
         ) : (

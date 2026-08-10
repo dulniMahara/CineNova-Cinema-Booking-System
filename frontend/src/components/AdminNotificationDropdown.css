@@ -1,6 +1,6 @@
 /* CineNova 2026 - Premium Dark Glass Notification Dropdown Theme (Matching ProfileDropdown) */
 
-.admin-notif-container {
+.admin-notif-dropdown-container {
   position: relative;
   display: inline-block;
   overflow: visible !important;
@@ -9,8 +9,8 @@
 /* Bell Trigger Button - Matching Pill Control Aesthetic */
 .admin-notif-bell-btn {
   position: relative;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   background: rgba(18, 21, 31, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);

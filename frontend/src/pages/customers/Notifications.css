@@ -1,7 +1,10 @@
 /* --- PAGE LAYOUT --- */
 .notif-page {
   min-height: 85vh;
-  background-color: #0b0f19; /* Deep Dark Background */
+  background-color: #060B08; /* CineNova Matte Black */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(31, 164, 99, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
   padding: 40px 20px;
   color: #fff;
   display: flex;
@@ -19,26 +22,26 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(31, 164, 99, 0.18);
   padding-bottom: 15px;
 }
 
 .notif-header h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #e0e6ed;
+  color: #ffffff;
   margin: 0;
   letter-spacing: 0.5px;
 }
 
 .notif-count-badge {
-  background: linear-gradient(135deg, #ff3d00, #ff9100);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   padding: 5px 15px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: bold;
-  box-shadow: 0 4px 10px rgba(255, 61, 0, 0.3);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
 /* --- LIST & CARDS --- */
@@ -51,41 +54,43 @@
 .notif-card {
   display: flex;
   align-items: center;
-  background: #161b28; /* Slightly lighter card bg */
+  background: #16231C; /* CineNova Card Dark Green Charcoal */
+  border: 1px solid rgba(31, 164, 99, 0.14);
   border-radius: 12px;
   padding: 20px;
   position: relative;
   overflow: hidden;
   border-left: 5px solid transparent; /* Colored strip */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   transition: all 0.3s ease;
 }
 
 /* Hover Effect */
 .notif-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  background: #1c2230;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(31, 164, 99, 0.12);
+  background: #1c2e25;
+  border-color: rgba(31, 164, 99, 0.3);
 }
 
 /* --- COLOR CODING --- */
 /* Green for Success/Payments */
-.notif-card.success { border-left-color: #00e676; }
-.notif-card.success .notif-icon { color: #00e676; }
+.notif-card.success { border-left-color: #1FA463; }
+.notif-card.success .notif-icon { color: #1FA463; }
 
 /* Red for Errors/Cancellations */
-.notif-card.error { border-left-color: #ff3d00; }
-.notif-card.error .notif-icon { color: #ff3d00; }
+.notif-card.error { border-left-color: #ef4444; }
+.notif-card.error .notif-icon { color: #ef4444; }
 
-/* Blue for Info */
-.notif-card.info { border-left-color: #2979ff; }
-.notif-card.info .notif-icon { color: #2979ff; }
+/* Emerald Green for Info */
+.notif-card.info { border-left-color: #10b981; }
+.notif-card.info .notif-icon { color: #10b981; }
 
 /* --- READ vs UNREAD --- */
 .notif-card.read {
-  opacity: 0.6;
-  background: #0f121a;
-  border-left-color: #444; /* Grey out logic */
+  opacity: 0.65;
+  background: #0d1612;
+  border-left-color: rgba(154, 176, 165, 0.3);
 }
 .notif-card.read:hover {
   opacity: 1;
@@ -107,12 +112,12 @@
   font-size: 16px;
   line-height: 1.5;
   margin: 0 0 6px 0;
-  color: #e0e0e0;
+  color: #f8fafc;
 }
 
 .notif-date {
   font-size: 12px;
-  color: #888;
+  color: #9ab0a5; /* CineNova muted sage text */
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -138,19 +143,21 @@
 }
 
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(31, 164, 99, 0.15);
   transform: scale(1.1);
 }
 
-.read-btn { color: #2979ff; }
-.delete-btn { color: #ff5252; }
+.read-btn { color: #34d399; }
+.read-btn:hover { color: #10b981; background: rgba(16, 185, 129, 0.15); }
+.delete-btn { color: #f87171; }
+.delete-btn:hover { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
 
 /* Empty State */
 .notif-empty {
   text-align: center;
   padding: 60px;
-  color: #666;
-  background: rgba(255, 255, 255, 0.02);
+  color: #9ab0a5;
+  background: rgba(22, 35, 28, 0.35);
   border-radius: 12px;
-  border: 1px dashed #333;
+  border: 1px dashed rgba(31, 164, 99, 0.25);
 }

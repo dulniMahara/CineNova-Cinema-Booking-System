@@ -162,10 +162,10 @@ const AdminNotificationDropdown = () => {
   };
 
   return (
-    <div className="admin-notif-container" ref={dropdownRef}>
+    <div className="admin-notif-dropdown-container" ref={dropdownRef}>
       {/* Bell Trigger Button - Matching Pill Control Aesthetic */}
       <button
-        className={`admin-notif-bell-btn ${isOpen ? 'active' : ''}`}
+        className={`header-action-btn admin-notif-bell-btn ${isOpen ? 'active' : ''}`}
         onClick={handleToggle}
         aria-label="Notifications"
         aria-expanded={isOpen}
