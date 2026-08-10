@@ -1,272 +1,669 @@
-# Cinema Booking System
+# 🎬 CineNova Cinema Booking System
 
-A full-stack web application for managing cinema operations, movie bookings, and seat reservations with real-time features and secure payment processing.
+CineNova is a full-stack cinema booking and management web application built using the MERN stack.
 
-## 🎬 Features
+The system provides separate customer and administrator experiences for browsing movies, scheduling showtimes, managing cinema halls, selecting seats, completing bookings, processing payments, receiving notifications, and monitoring cinema operations.
 
-- **User Management**: User registration, login, and authentication with JWT
-- **Movie Management**: Browse movies with detailed information, ratings, and trailers
-- **Seat Selection**: Interactive seat map with real-time availability updates
-- **Booking System**: Complete booking workflow with confirmation and history
-- **Payment Processing**: Secure payment integration with validation
-- **Real-time Updates**: Live seat availability using WebSocket connections
-- **Notifications**: Email notifications and in-app messaging system
-- **OTP Verification**: Secure two-factor authentication for account security
-- **Admin Dashboard**: Administrative features for managing movies, halls, and showtimes
-- **Responsive Design**: Mobile-friendly interface with modern UI components
+The application was developed as a university software engineering project with a focus on full-stack development, authentication, role-based access control, persistent booking data, responsive user interfaces, and structured cinema management workflows.
 
-## 🏗️ Architecture
+---
 
-### Backend (Node.js)
-- **Framework**: Express.js
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (JSON Web Tokens)
-- **Real-time**: Socket.IO for live updates
-- **Email**: Nodemailer for notifications
-- **Testing**: Jest with comprehensive test coverage
-- **Validation**: Express-validator for input sanitization
+## ✨ Features
 
-### Frontend (React)
-- **Framework**: React 19 with modern hooks
-- **Routing**: React Router DOM for navigation
-- **State Management**: React Context API
-- **HTTP Client**: Axios for API communication
-- **UI Components**: Custom components with React Icons
-- **Styling**: CSS modules with responsive design
-- **Real-time**: Socket.IO client for live features
-- **Testing**: React Testing Library with Jest
+### 👤 Customer Features
 
-## 📋 Prerequisites
+- Customer registration and secure login
+- Email verification for newly registered accounts
+- JWT-based authentication
+- Customer profile management
+- Browse Now Showing movies
+- Browse Coming Soon movies
+- View detailed movie information
+- View posters, banners, genres, ratings, descriptions, and trailers
+- View actual available showtimes
+- Select screening dates and showtimes
+- Interactive cinema seat selection
+- View cinema hall seating layouts
+- Showtime-specific seat availability
+- Persistent booked-seat locking
+- Multiple seat selection
+- Complete cinema booking workflow
+- Booking confirmation page
+- View booking history through **My Bookings**
+- Persistent bookings after logout/login
+- Customer payment workflow
+- Credit / Debit Card payment option
+- Mobile Banking payment option
+- Pay at Counter option
+- Payment validation
+- Customer notifications
+- Notification unread-count management
+- Persistent notification read status
+- Responsive CineNova-themed interface
 
-- Node.js (v18 or higher)
-- MongoDB Atlas account or local MongoDB installation
-- npm or yarn package manager
-- Git for version control
+---
+
+## 🛠️ Administrator Features
+
+CineNova includes a separate protected administrator interface.
+
+### Admin Dashboard
+
+- Cinema operation overview
+- Movie statistics
+- Hall information
+- Showtime information
+- Customer information
+- Booking information
+- Revenue and payment summaries
+- Recent cinema activity
+
+### Movie Management
+
+Administrators can:
+
+- Add movies
+- Edit movie information
+- Delete movies
+- Manage movie status
+- Change movies between:
+  - Now Showing
+  - Coming Soon
+- Manage movie posters and banners
+- Manage trailers
+- Update movie genres, ratings, descriptions, and runtime
+
+Movie status changes are reflected on the customer side.
+
+### Showtime Management
+
+Administrators can:
+
+- Create showtimes
+- Edit existing showtimes
+- Manage screening schedules
+- Select movies
+- Select cinema halls
+- Configure screening dates
+- Configure start times
+- Configure ticket prices
+- Schedule future screenings
+- Create future showtimes for Coming Soon movies
+
+Customer Movie Details pages use the actual showtime records created through the administrative system.
+
+### Hall Management
+
+Administrators can:
+
+- Create and manage cinema halls
+- Configure hall rows and columns
+- Edit cinema seating layouts
+- Configure seats and aisles
+- View hall layouts
+- Automatically calculate hall capacity
+- Update existing hall structures
+
+Updated hall layouts are reflected in the customer seat-selection experience.
+
+### User Management
+
+Administrators can:
+
+- View registered customers
+- Search customer records
+- View account information
+- Monitor customer verification status
+
+### Booking Management
+
+Administrators can:
+
+- View customer bookings
+- Review booking references
+- View customer information
+- View movie and showtime information
+- View selected seats
+- View booking amounts and statuses
+
+### Payment Management
+
+Administrators can:
+
+- Monitor cinema transactions
+- View payment records
+- Review payment methods
+- View revenue information
+- Review transaction details
+
+### Admin Notifications
+
+Administrators receive activity notifications related to cinema operations.
+
+The notification interface includes:
+
+- Recent notifications
+- Notification badge
+- Read/unread status
+- Notification dropdown
+- Full Notifications page
+
+---
+
+## 🎟️ Booking and Seat Availability
+
+CineNova manages seat availability on a **per-showtime basis**.
+
+This means a physical seat can be available for one screening and booked for another screening without modifying the physical hall structure.
+
+The hall defines the cinema seating layout, while bookings determine which seats are occupied for a particular showtime.
+
+### Booking Flow
+
+```text
+Customer
+   ↓
+Select Movie
+   ↓
+Select Showtime
+   ↓
+Select Seats
+   ↓
+Choose Payment Method
+   ↓
+Confirm Booking
+   ↓
+Booking Stored
+   ↓
+Seats Locked for Selected Showtime
+   ↓
+Booking Confirmation
+```
+
+Once a booking is successfully completed, the selected seats become unavailable for that specific showtime.
+
+---
+
+## 📅 Showtime Architecture
+
+Cinema showtimes stored in MongoDB are used as the main scheduling source.
+
+Admin-created showtimes are displayed on the customer Movie Details page and are used for seat selection and booking.
+
+```text
+Admin Showtime Management
+           ↓
+        MongoDB
+           ↓
+Customer Movie Details
+           ↓
+   Showtime Selection
+           ↓
+      Seat Selection
+```
+
+Future screenings can also be created for Coming Soon movies, allowing customers to view scheduled screenings in advance.
+
+---
+
+## 💳 Payment Methods
+
+CineNova currently supports the following booking payment options:
+
+- Credit / Debit Card
+- Mobile Banking
+- Pay at Counter
+
+The payment forms include input validation, and successful bookings continue to the booking confirmation process.
+
+---
+
+## 🔔 Notification System
+
+CineNova contains separate notification experiences for customers and administrators.
+
+### Customer Notifications
+
+Customers can:
+
+- View notifications
+- See unread notification counts
+- Open the Notifications page
+- Mark viewed notifications as read
+- Retain notification read status after refresh and navigation
+- Receive new unread notifications when new activity occurs
+
+### Administrator Notifications
+
+Administrators can:
+
+- View recent administrative notifications
+- Open the notification dropdown
+- View the full Admin Notifications page
+- Monitor cinema-related activity
+- View read and unread notification states
+
+---
+
+## 🔐 Authentication and Authorization
+
+CineNova uses JWT-based authentication.
+
+The system supports role-based access for:
+
+- Customers
+- Administrators
+
+Protected frontend routes help prevent unauthorized navigation, while protected backend routes enforce authorization for sensitive operations.
+
+Administrator-only operations include:
+
+- Movie management
+- Showtime management
+- Hall management
+- User management
+- Booking management
+- Payment management
+- Administrative notifications
+
+Passwords are securely hashed before being stored.
+
+---
+
+## 📧 Email Verification
+
+Newly registered customer accounts support email verification.
+
+A verification email is sent after registration so that the customer can verify the account before continuing to use the system.
+
+Sensitive email credentials, JWT secrets, database credentials, and other private configuration values are stored using environment variables and should never be committed to GitHub.
+
+---
+
+## 🏗️ Technology Stack
+
+### Frontend
+
+- React
+- JavaScript
+- React Router DOM
+- Axios
+- React Icons
+- HTML5
+- CSS3
+- Responsive Web Design
+
+### Backend
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JSON Web Tokens
+- bcrypt / bcryptjs
+- Nodemailer
+- REST APIs
+
+### Development and Testing Tools
+
+- Git
+- GitHub
+- npm
+- MongoDB
+- Jest
+- React Testing Library
+- GitHub Actions
+
+---
+
+## 📁 Project Structure
+
+```text
+CineNova-Cinema-Booking-System/
+│
+├── backend/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
+│   ├── seed/
+│   ├── tests/
+│   ├── utils/
+│   ├── package.json
+│   └── server.js
+│
+├── frontend/
+│   ├── public/
+│   │
+│   └── src/
+│       ├── components/
+│       ├── pages/
+│       │   ├── admin/
+│       │   └── customers/
+│       ├── services/
+│       ├── tests/
+│       ├── utils/
+│       └── App.js
+│
+├── .github/
+│   └── workflows/
+│
+└── README.md
+```
+
+---
+
+## ⚙️ Prerequisites
+
+Before running CineNova, install:
+
+- Node.js
+- npm
+- MongoDB or create a MongoDB Atlas account
+- Git
+
+---
 
 ## 🚀 Installation
 
 ### 1. Clone the Repository
+
 ```bash
-git clone https://github.com/yourusername/cinema-booking-system.git
-cd cinema-booking-system
+git clone https://github.com/dulniMahara/CineNova-Cinema-Booking-System.git
+cd CineNova-Cinema-Booking-System
 ```
 
+---
+
 ### 2. Backend Setup
+
+Navigate to the backend directory:
+
 ```bash
 cd backend
+```
+
+Install backend dependencies:
+
+```bash
 npm install
 ```
 
-Create a `.env` file in the backend directory:
+Create a `.env` file inside the `backend` directory.
+
+Example:
+
 ```env
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 PORT=5001
-MONGODB_URI=your-mongodb-connection-string
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+EMAIL_USER=your_email_address
+EMAIL_PASS=your_email_app_password
 FRONTEND_URL=http://localhost:3000
 ```
 
+Start the backend server:
+
+```bash
+npm start
+```
+
+The backend runs locally on:
+
+```text
+http://localhost:5001
+```
+
+---
+
 ### 3. Frontend Setup
+
+Open another terminal and navigate to the frontend directory:
+
 ```bash
 cd frontend
+```
+
+Install frontend dependencies:
+
+```bash
 npm install
 ```
 
-Create a `.env` file in the frontend directory:
+Create a `.env` file inside the `frontend` directory:
+
 ```env
 REACT_APP_API_URL=http://localhost:5001/api
 ```
 
-## 🏃‍♂️ Running the Application
+Start the frontend:
 
-### Development Mode
-
-**Start Backend Server:**
 ```bash
-cd backend
 npm start
 ```
-Backend will run on http://localhost:5001
 
-**Start Frontend Development Server:**
-```bash
-cd frontend
-npm start
-```
-Frontend will run on http://localhost:3000
+The frontend runs locally on:
 
-### Production Build
-
-**Build Frontend:**
-```bash
-cd frontend
-npm run build
+```text
+http://localhost:3000
 ```
 
-**Start Production Server:**
-```bash
-cd backend
-NODE_ENV=production npm start
+---
+
+## 🌐 Local Application URLs
+
+### Customer Application
+
+```text
+http://localhost:3000
 ```
 
-## 📊 Database Schema
+### Admin Login
 
-### Core Entities
-- **Users**: Authentication, profiles, and user preferences
-- **Movies**: Film information, ratings, posters, and trailers
-- **Halls**: Cinema hall configurations and seating layouts
-- **Seats**: Individual seat management with real-time status
-- **Showtimes**: Movie screening schedules and timing
-- **Bookings**: Reservation records and user booking history
-- **Payments**: Transaction processing and payment verification
-- **Notifications**: System messages and email communications
-- **OTP**: One-time password verification records
+```text
+http://localhost:3000/admin-login
+```
+
+### Backend API
+
+```text
+http://localhost:5001/api
+```
+
+---
+
+## 🗄️ Main Database Entities
+
+CineNova manages data for the following main entities:
+
+- Users
+- Movies
+- Cinema Halls
+- Showtimes
+- Bookings
+- Payments
+- Notifications
+
+These entities work together to manage movie schedules, cinema seating layouts, customer bookings, transactions, and application activity.
+
+---
 
 ## 🧪 Testing
 
+The project includes frontend and backend tests for important application functionality.
+
+Examples include:
+
+- Hall route integration testing
+- Notification controller unit testing
+- Movie Details testing
+- Showtime Manager testing
+
 ### Backend Testing
+
 ```bash
 cd backend
-npm test                    # Run all tests
-npm run test:unit          # Unit tests only
-npm run test:integration   # Integration tests only
-npm run test:coverage      # Generate coverage report
-npm run test:watch         # Watch mode for development
+npm test
 ```
 
 ### Frontend Testing
+
 ```bash
 cd frontend
-npm test                   # Run tests in watch mode
-npm run test:coverage      # Generate coverage report
-npm run test:ci           # Run tests in CI mode
+npm test
 ```
 
-### Coverage Requirements
-- **Backend**: 70% minimum coverage for branches, functions, lines, and statements
-- **Frontend**: Comprehensive component and integration testing
+The exact available test scripts can be found inside the relevant `package.json` files.
 
-## 🔧 Available Scripts
+---
 
-### Backend
-- `npm start` - Start production server
-- `npm test` - Run test suite
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+## 🔄 CI Pipeline
 
-### Frontend
-- `npm start` - Start development server
-- `npm run build` - Build for production
-- `npm test` - Run tests
-- `npm run lint` - Run ESLint
+The GitHub repository includes GitHub Actions workflows for automated project checks.
 
-## 🚀 Deployment
+The CI workflow helps verify backend functionality when changes are pushed to the repository.
 
-### CI/CD Pipeline
-The project includes GitHub Actions for automated testing:
-- Runs on push to `main` branch
-- Executes backend unit and integration tests
-- Ensures code quality before deployment
+This provides an additional layer of automated testing during development.
 
-### Production Deployment
-1. Update environment variables for production
-2. Build the frontend application
-3. Deploy backend to your hosting service
-4. Serve frontend build files
-5. Configure reverse proxy if needed
+---
 
-## 📱 API Endpoints
+## 🛡️ Security Practices
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/verify-otp` - OTP verification
+CineNova applies several security practices, including:
 
-### Movies
-- `GET /api/movies` - Get all movies
-- `GET /api/movies/:id` - Get movie details
-- `POST /api/movies` - Create movie (admin)
-- `PUT /api/movies/:id` - Update movie (admin)
+- JWT authentication
+- Role-based authorization
+- Password hashing
+- Protected administrator routes
+- Backend authorization checks
+- Environment variables for sensitive configuration
+- Input validation
+- Email account verification
 
-### Bookings
-- `POST /api/bookings` - Create booking
-- `GET /api/bookings/user/:userId` - Get user bookings
-- `PUT /api/bookings/:id` - Update booking status
+Sensitive information such as passwords, database credentials, JWT secrets, email App Passwords, and API keys should never be committed to source control.
 
-### Seats
-- `GET /api/seats/showtime/:showtimeId` - Get seat availability
-- `PUT /api/seats/reserve` - Reserve seats
-- `PUT /api/seats/release` - Release reserved seats
+---
 
-## 🔐 Security Features
+## 🎨 User Interface
 
-- JWT-based authentication with secure token handling
-- Password hashing using bcryptjs
-- Input validation and sanitization
-- CORS configuration for cross-origin requests
-- Environment variable protection for sensitive data
-- OTP verification for enhanced security
-- Rate limiting and request validation
+CineNova uses a custom cinema-inspired interface.
 
-## 🏗️ Project Structure
+The application design includes:
 
-```
-cinema-booking-system/
-├── backend/
-│   ├── controllers/        # Request handlers
-│   ├── models/            # Database schemas
-│   ├── routes/            # API routes
-│   ├── middlewares/       # Custom middleware
-│   ├── utils/            # Helper functions
-│   ├── tests/            # Test files
-│   ├── scripts/          # Database scripts
-│   └── server.js         # Entry point
-├── frontend/
-│   ├── src/
-│   │   ├── components/   # Reusable components
-│   │   ├── pages/       # Page components
-│   │   ├── context/     # React context
-│   │   ├── services/    # API services
-│   │   └── tests/       # Test files
-│   └── public/          # Static assets
-└── .github/
-    └── workflows/       # CI/CD pipelines
+- Dark backgrounds
+- Deep green surfaces
+- Emerald green accents
+- High-contrast text
+- Responsive layouts
+- Consistent customer and administrator interfaces
+- Movie poster and banner presentation
+- Interactive seating layouts
+- Responsive management tables and forms
+
+The administrator interface focuses on cinema management, while the customer interface focuses on movie discovery, booking, payments, and booking history.
+
+---
+
+## 📸 Screenshots
+
+Screenshots of the completed application can be added to this section.
+
+### Recommended Customer Screenshots
+
+- Customer Home Page
+- Now Showing Movies
+- Coming Soon Movies
+- Movie Details
+- Showtime Selection
+- Seat Selection
+- Payment Page
+- Booking Confirmation
+- My Bookings
+- Customer Notifications
+
+### Recommended Administrator Screenshots
+
+- Admin Dashboard
+- Movie Management
+- Showtime Management
+- Hall Management
+- User Management
+- Booking Management
+- Payment Management
+- Admin Notifications
+
+Example image syntax:
+
+```markdown
+![CineNova Customer Home](docs/screenshots/customer-home.png)
 ```
 
-## 🤝 Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🔮 Future Improvements
 
-### Development Guidelines
-- Follow existing code style and conventions
-- Write tests for new features
-- Ensure all tests pass before submitting
-- Update documentation as needed
-- Use meaningful commit messages
+Possible future improvements for CineNova include:
+
+- Integration with a production payment gateway
+- QR-code cinema tickets
+- Digital ticket scanning
+- Advanced revenue analytics
+- Detailed cinema reports and charts
+- Promotional codes
+- Loyalty rewards
+- Multi-cinema or branch support
+- Mobile application development
+- Multi-language support
+- Automated booking reminders
+- Additional notification delivery options
+
+---
+
+## 🎓 Academic Project
+
+CineNova was developed as a university software engineering project.
+
+The project demonstrates practical implementation of:
+
+- Full-stack web development
+- REST API development
+- Database design
+- Authentication
+- Authorization
+- React application development
+- Node.js and Express backend development
+- MongoDB integration
+- Cinema booking workflows
+- Payment workflows
+- Software testing
+- Version control using Git and GitHub
+- CI workflows
+- Responsive user interface development
+
+---
+
+## 💻 Development Process
+
+The project was developed incrementally using Git for version control.
+
+Development activities included:
+
+- Feature implementation
+- Frontend and backend integration
+- Authentication implementation
+- Cinema hall and seat-layout development
+- Showtime scheduling
+- Booking and payment implementation
+- Notification development
+- Testing
+- Bug fixing
+- User interface refinement
+- Database synchronization
+- Documentation
+
+---
 
 ## 📄 License
 
-This project is licensed under the ISC License. See the `LICENSE` file for details.
-
-## 👥 Support
-
-For support and questions:
-- Create an issue in the GitHub repository
-- Review existing documentation
-- Check the test files for usage examples
-
-## 🔮 Future Enhancements
-
-- Mobile application development
-- Advanced reporting and analytics
-- Integration with external payment gateways
-- Multi-language support
-- Advanced seat selection features
-- Loyalty program implementation
-- Social media integration
-- Enhanced notification system
+This project is intended primarily for educational and academic use.
