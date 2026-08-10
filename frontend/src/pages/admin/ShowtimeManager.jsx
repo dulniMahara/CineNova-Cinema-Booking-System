@@ -23,21 +23,18 @@ import { getShowtimes, deleteShowtime } from "../../services/showtimeService";
 import axios from "axios";
 import "./ShowtimeManager.css";
 
-const getShowtimeStatus = (showtime) => {
-  if (!showtime) return "upcoming";
-  if (showtime.isCancelled || showtime.status === "cancelled") return "cancelled";
-  if (!showtime.date || !showtime.startTime) return "upcoming";
-
+const getShowtimeDateTime = (st) => {
+  if (!st || !st.date) return 0;
   try {
-    const rawDate = new Date(showtime.date);
-    if (isNaN(rawDate.getTime())) return "upcoming";
+    const rawDate = new Date(st.date);
+    if (isNaN(rawDate.getTime())) return 0;
 
     const year = rawDate.getFullYear();
     const month = String(rawDate.getMonth() + 1).padStart(2, "0");
     const day = String(rawDate.getDate()).padStart(2, "0");
     const datePart = `${year}-${month}-${day}`;
 
-    let timeStr = String(showtime.startTime).trim();
+    let timeStr = String(st.startTime || "").trim();
     let hours = 0;
     let minutes = 0;
 
@@ -45,7 +42,7 @@ const getShowtimeStatus = (showtime) => {
       const isPM = timeStr.toLowerCase().includes("pm");
       const cleanTime = timeStr.replace(/(am|pm)/i, "").trim();
       const parts = cleanTime.split(":");
-      hours = parseInt(parts[0], 10);
+      hours = parseInt(parts[0], 10) || 0;
       minutes = parseInt(parts[1], 10) || 0;
       if (isPM && hours < 12) hours += 12;
       if (!isPM && hours === 12) hours = 0;
@@ -55,25 +52,60 @@ const getShowtimeStatus = (showtime) => {
       minutes = parseInt(parts[1], 10) || 0;
     }
 
-    const showtimeDateTime = new Date(`${datePart}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
-    const now = new Date();
+    const d = new Date(`${datePart}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`);
+    return isNaN(d.getTime()) ? rawDate.getTime() : d.getTime();
+  } catch (e) {
+    return new Date(st.date).getTime() || 0;
+  }
+};
 
-    if (isNaN(showtimeDateTime.getTime())) return "upcoming";
+const getShowtimeStatus = (showtime) => {
+  if (!showtime) return "upcoming";
+  if (showtime.isCancelled || showtime.status === "cancelled") return "cancelled";
+  if (!showtime.date || !showtime.startTime) return "upcoming";
+
+  try {
+    const rawDate = new Date(showtime.date);
+    if (isNaN(rawDate.getTime())) return "upcoming";
+
+    const showtimeDateTime = getShowtimeDateTime(showtime);
+    const now = Date.now();
 
     if (showtimeDateTime < now) {
       return "past";
     }
 
+    const nowDate = new Date();
     const isToday =
-      rawDate.getFullYear() === now.getFullYear() &&
-      rawDate.getMonth() === now.getMonth() &&
-      rawDate.getDate() === now.getDate();
+      rawDate.getFullYear() === nowDate.getFullYear() &&
+      rawDate.getMonth() === nowDate.getMonth() &&
+      rawDate.getDate() === nowDate.getDate();
 
     if (isToday) return "today";
     return "upcoming";
   } catch (e) {
     return "upcoming";
   }
+};
+
+const getPaginationRange = (current, total) => {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  const pages = [1];
+  if (current > 3) pages.push("...");
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (current < total - 2) pages.push("...");
+  pages.push(total);
+
+  return pages;
 };
 
 const formatDate = (dateStr) => {
@@ -117,12 +149,12 @@ const ShowtimeManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [hallFilter, setHallFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("active");
   const [sortBy, setSortBy] = useState("date-asc");
 
   // Pagination & Modal states
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [stToDelete, setStToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
@@ -150,13 +182,15 @@ const ShowtimeManager = () => {
   };
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (typeof window !== "undefined" && typeof window.scrollTo === "function") {
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
     fetchShowtimes();
   }, [filterDate]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterDate, hallFilter, statusFilter, sortBy]);
+  }, [searchTerm, filterDate, hallFilter, statusFilter, sortBy, itemsPerPage]);
 
   const handleEdit = (id) => {
     navigate(`/admin/showtimes/edit/${id}`);
@@ -187,7 +221,7 @@ const ShowtimeManager = () => {
     setSearchTerm("");
     setFilterDate("");
     setHallFilter("");
-    setStatusFilter("all");
+    setStatusFilter("active");
     setSortBy("date-asc");
   };
 
@@ -225,18 +259,37 @@ const ShowtimeManager = () => {
       result = result.filter((st) => (st.hall?._id || st.hall) === hallFilter);
     }
 
-    if (statusFilter !== "all") {
+    if (statusFilter === "active") {
+      result = result.filter((st) => {
+        const s = getShowtimeStatus(st);
+        return s === "today" || s === "upcoming";
+      });
+    } else if (statusFilter !== "all") {
       result = result.filter((st) => getShowtimeStatus(st) === statusFilter);
     }
 
     result.sort((a, b) => {
-      const dateA = new Date(a.date).getTime() || 0;
-      const dateB = new Date(b.date).getTime() || 0;
+      const timeA = getShowtimeDateTime(a);
+      const timeB = getShowtimeDateTime(b);
       const priceA = Number(a.price) || 0;
       const priceB = Number(b.price) || 0;
 
-      if (sortBy === "date-asc") return dateA - dateB;
-      if (sortBy === "date-desc") return dateB - dateA;
+      if (sortBy === "date-asc") {
+        if (statusFilter === "past") {
+          return timeB - timeA; // Most recent past first
+        }
+        if (statusFilter === "all") {
+          const isPastA = getShowtimeStatus(a) === "past";
+          const isPastB = getShowtimeStatus(b) === "past";
+          if (!isPastA && isPastB) return -1;
+          if (isPastA && !isPastB) return 1;
+          if (isPastA && isPastB) return timeB - timeA;
+          return timeA - timeB;
+        }
+        return timeA - timeB;
+      }
+
+      if (sortBy === "date-desc") return timeB - timeA;
       if (sortBy === "time-asc") return (a.startTime || "").localeCompare(b.startTime || "");
       if (sortBy === "time-desc") return (b.startTime || "").localeCompare(a.startTime || "");
       if (sortBy === "price-asc") return priceA - priceB;
@@ -388,6 +441,7 @@ const ShowtimeManager = () => {
               <div className="select-wrapper">
                 <FiFilter className="select-icon" />
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                  <option value="active">Active (Today + Upcoming)</option>
                   <option value="all">All Statuses</option>
                   <option value="today">Today</option>
                   <option value="upcoming">Upcoming</option>
@@ -406,7 +460,7 @@ const ShowtimeManager = () => {
                 </select>
               </div>
 
-              {(searchTerm || filterDate || hallFilter || statusFilter !== "all" || sortBy !== "date-asc") && (
+              {(searchTerm || filterDate || hallFilter || statusFilter !== "active" || sortBy !== "date-asc") && (
                 <button className="btn-clear-filters" onClick={handleClearFilters}>
                   Clear Filters
                 </button>
@@ -443,16 +497,16 @@ const ShowtimeManager = () => {
           <div className="admin-empty-card">
             <div className="empty-icon-box"><FiCalendar /></div>
             <h3>
-              {searchTerm || filterDate || hallFilter || statusFilter !== "all"
+              {searchTerm || filterDate || hallFilter || statusFilter !== "active"
                 ? "No showtimes match the selected filters."
-                : "No showtimes scheduled."}
+                : "No active showtimes scheduled."}
             </h3>
             <p>
-              {searchTerm || filterDate || hallFilter || statusFilter !== "all"
+              {searchTerm || filterDate || hallFilter || statusFilter !== "active"
                 ? "Try adjusting your search criteria or clear filters."
                 : "Add a showtime to begin scheduling screenings."}
             </p>
-            {searchTerm || filterDate || hallFilter || statusFilter !== "all" ? (
+            {searchTerm || filterDate || hallFilter || statusFilter !== "active" ? (
               <button className="btn-add-showtime-gold" onClick={handleClearFilters}>
                 Clear Filters
               </button>
@@ -532,7 +586,7 @@ const ShowtimeManager = () => {
 
                         {/* Availability */}
                         <td>
-                          <span className="availability-chip">
+                          <span className="availability-text">
                             {typeof availCount === "number" && capacity
                               ? `${availCount} / ${capacity} available`
                               : capacity
@@ -601,7 +655,7 @@ const ShowtimeManager = () => {
                       </div>
                       <div className="mobile-price-row">
                         <span className="price-tag">{formatPrice(st.price)}</span>
-                        {capacity && <span className="availability-chip">{capacity} Capacity</span>}
+                        {capacity && <span className="availability-text">{capacity} Capacity</span>}
                       </div>
                       <div className="mobile-card-actions">
                         <button className="btn-action-edit" onClick={() => handleEdit(st._id)}>
@@ -618,12 +672,32 @@ const ShowtimeManager = () => {
             </div>
 
             {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="admin-pagination-bar">
+            <div className="admin-pagination-bar">
+              <div className="pagination-count-box">
                 <span className="pagination-count-info">
-                  Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredShowtimes.length)} of {filteredShowtimes.length} showtimes
+                  Showing {filteredShowtimes.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–
+                  {Math.min(currentPage * itemsPerPage, filteredShowtimes.length)} of {filteredShowtimes.length} showtimes
                 </span>
 
+                <div className="rows-per-page-selector">
+                  <label htmlFor="itemsPerPageSelect">Rows per page:</label>
+                  <select
+                    id="itemsPerPageSelect"
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="rows-select-input"
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+              </div>
+
+              {totalPages > 1 && (
                 <div className="pagination-buttons">
                   <button
                     className="pagination-btn"
@@ -633,15 +707,24 @@ const ShowtimeManager = () => {
                     <FiChevronLeft /> Previous
                   </button>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      className={`pagination-num ${page === currentPage ? "active" : ""}`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                    if (page === "...") {
+                      return (
+                        <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={page}
+                        className={`pagination-num ${page === currentPage ? "active" : ""}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
 
                   <button
                     className="pagination-btn"
@@ -651,8 +734,8 @@ const ShowtimeManager = () => {
                     Next <FiChevronRight />
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </>
         )}
 

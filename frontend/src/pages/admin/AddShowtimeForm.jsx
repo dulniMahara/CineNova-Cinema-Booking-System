@@ -5,6 +5,21 @@ import { getMovies } from "../../services/movieService";
 import "./MovieForm.css";
 import axios from "axios";
 
+const getHallCapacity = (hall) => {
+  if (!hall) return "N/A";
+  if (typeof hall.seatCapacity === "number" && hall.seatCapacity > 0) {
+    return hall.seatCapacity;
+  }
+  if (Array.isArray(hall.seatLayout)) {
+    const activeSeats = hall.seatLayout.flat().filter(s => s === 1).length;
+    if (activeSeats > 0) return activeSeats;
+  }
+  if (hall.totalRows && hall.totalCols) {
+    return hall.totalRows * hall.totalCols;
+  }
+  return "N/A";
+};
+
 const AddShowtimeForm = () => {
   const navigate = useNavigate();
 
@@ -155,7 +170,7 @@ const AddShowtimeForm = () => {
                 <option value="">-- Select a Cinema Hall --</option>
                 {halls.map((hall) => (
                   <option key={hall._id} value={hall._id}>
-                    {hall.name} - {hall.screenType || "Standard"} (Capacity: {hall.seatCapacity || "N/A"})
+                    {hall.name} - {hall.screenType || "Standard"} (Capacity: {getHallCapacity(hall)})
                   </option>
                 ))}
               </select>

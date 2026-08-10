@@ -5,6 +5,61 @@ import { getMovies } from "../../services/movieService";
 import "./MovieForm.css";
 import axios from "axios";
 
+const formatTimeForInput = (timeStr) => {
+  if (!timeStr) return "";
+  let str = String(timeStr).trim();
+
+  if (/am|pm/i.test(str)) {
+    const isPM = /pm/i.test(str);
+    const cleanStr = str.replace(/(am|pm)/i, "").trim();
+    const parts = cleanStr.split(":");
+    let hours = parseInt(parts[0], 10) || 0;
+    let minutes = parseInt(parts[1], 10) || 0;
+
+    if (isPM && hours < 12) hours += 12;
+    if (!isPM && hours === 12) hours = 0;
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  }
+
+  const parts = str.split(":");
+  if (parts.length >= 2) {
+    const hours = String(parts[0]).padStart(2, "0");
+    const minutes = String(parts[1]).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+
+  return str;
+};
+
+const formatDateForInput = (dateVal) => {
+  if (!dateVal) return "";
+  if (typeof dateVal === "string" && dateVal.includes("T")) {
+    return dateVal.split("T")[0];
+  }
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getHallCapacity = (hall) => {
+  if (!hall) return "N/A";
+  if (typeof hall.seatCapacity === "number" && hall.seatCapacity > 0) {
+    return hall.seatCapacity;
+  }
+  if (Array.isArray(hall.seatLayout)) {
+    const activeSeats = hall.seatLayout.flat().filter(s => s === 1).length;
+    if (activeSeats > 0) return activeSeats;
+  }
+  if (hall.totalRows && hall.totalCols) {
+    return hall.totalRows * hall.totalCols;
+  }
+  return "N/A";
+};
+
 const EditShowtimeForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -31,7 +86,8 @@ const EditShowtimeForm = () => {
         setMovies(Array.isArray(movieData) ? movieData : []);
 
         const hallRes = await axios.get(`${process.env.REACT_APP_API_URL}/halls`);
-        setHalls(hallRes.data.data || []);
+        const hallList = hallRes.data?.data || (Array.isArray(hallRes.data) ? hallRes.data : []);
+        setHalls(hallList);
 
         const stRes = await getShowtimes();
         const stData = stRes.data ? stRes.data : stRes;
@@ -40,13 +96,14 @@ const EditShowtimeForm = () => {
         const response = await getShowtimeById(id);
         const showtime = response.data || response;
 
-        const formattedDate = showtime.date ? new Date(showtime.date).toISOString().split("T")[0] : "";
+        const formattedDate = formatDateForInput(showtime.date);
+        const formattedTime = formatTimeForInput(showtime.startTime);
 
         setFormData({
-          movie: showtime.movie?._id || showtime.movie,
-          hall: showtime.hall?._id || showtime.hall,
+          movie: showtime.movie?._id || showtime.movie || "",
+          hall: showtime.hall?._id || showtime.hall || "",
           date: formattedDate,
-          startTime: showtime.startTime || "",
+          startTime: formattedTime,
           price: showtime.price || "",
         });
       } catch (err) {
@@ -175,7 +232,7 @@ const EditShowtimeForm = () => {
                 <option value="">-- Select a Cinema Hall --</option>
                 {halls.map((hall) => (
                   <option key={hall._id} value={hall._id}>
-                    {hall.name} - {hall.screenType || "Standard"} (Capacity: {hall.seatCapacity || "N/A"})
+                    {hall.name} - {hall.screenType || "Standard"} (Capacity: {getHallCapacity(hall)})
                   </option>
                 ))}
               </select>

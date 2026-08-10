@@ -16,19 +16,6 @@ import {
 } from "react-icons/fi";
 import "./MovieDetails.css";
 
-// Dynamic upcoming 7 days dates generator
-const generateUpcomingDates = () => {
-  const dates = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    dates.push(d);
-  }
-  return dates;
-};
-
 const MovieDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -39,9 +26,46 @@ const MovieDetails = () => {
   const [relatedMovies, setRelatedMovies] = useState([]);
   const [realShowtimes, setRealShowtimes] = useState([]);
 
-  const upcomingDates = useMemo(() => generateUpcomingDates(), []);
-  const [selectedDateObj, setSelectedDateObj] = useState(upcomingDates[0]);
+  // Compute unique, sorted available dates from real backend showtimes (today or future dates)
+  const availableDates = useMemo(() => {
+    if (!Array.isArray(realShowtimes) || realShowtimes.length === 0) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const uniqueMap = new Map();
+    realShowtimes.forEach((st) => {
+      if (!st || !st.date) return;
+      const d = new Date(st.date);
+      if (isNaN(d.getTime())) return;
+
+      const midnightDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      if (midnightDate >= today) {
+        const key = midnightDate.toDateString();
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, midnightDate);
+        }
+      }
+    });
+
+    const sorted = Array.from(uniqueMap.values());
+    sorted.sort((a, b) => a.getTime() - b.getTime());
+    return sorted;
+  }, [realShowtimes]);
+
+  const [selectedDateObj, setSelectedDateObj] = useState(null);
   const [selectedShowtimeId, setSelectedShowtimeId] = useState(null);
+
+  // Auto-select earliest available date when realShowtimes / availableDates load or change
+  useEffect(() => {
+    if (availableDates.length > 0) {
+      const exists = selectedDateObj && availableDates.some(d => d.toDateString() === selectedDateObj.toDateString());
+      if (!exists) {
+        setSelectedDateObj(availableDates[0]);
+      }
+    } else {
+      setSelectedDateObj(null);
+    }
+  }, [availableDates]);
 
   useEffect(() => {
     const fetchMovieData = async () => {
@@ -123,11 +147,17 @@ const MovieDetails = () => {
 
   // Compute showtimes for currently selected date
   const getShowtimesForDate = (dateObj) => {
+    if (!dateObj) return [];
     const dateStr = dateObj.toDateString();
     const isoDateStr = dateObj.toISOString();
 
     // Match backend showtimes only
-    const matchingReal = realShowtimes.filter(st => new Date(st.date).toDateString() === dateStr);
+    const matchingReal = realShowtimes.filter(st => {
+      if (!st || !st.date) return false;
+      const d = new Date(st.date);
+      return !isNaN(d.getTime()) && d.toDateString() === dateStr;
+    });
+
     return matchingReal.map(st => ({
       id: st._id,
       _id: st._id,
@@ -338,63 +368,71 @@ const MovieDetails = () => {
       <section className="details-section showtimes-section" id="showtimes-section">
         <h2 className="section-title">Available Showtimes</h2>
 
-        {/* Date Tabs Bar */}
-        <div className="date-picker-bar">
-          {upcomingDates.map((dateObj) => {
-            const isSelected = selectedDateObj.toDateString() === dateObj.toDateString();
-            const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
-            const dayNum = dateObj.getDate();
-            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+        {availableDates.length === 0 ? (
+          <div className="no-showtimes-msg" style={{ padding: '20px', color: '#94a3b8' }}>
+            No showtimes are currently scheduled for this movie.
+          </div>
+        ) : (
+          <>
+            {/* Date Tabs Bar */}
+            <div className="date-picker-bar">
+              {availableDates.map((dateObj) => {
+                const isSelected = selectedDateObj && selectedDateObj.toDateString() === dateObj.toDateString();
+                const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                const dayNum = dateObj.getDate();
+                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
 
-            return (
-              <button
-                key={dateObj.toDateString()}
-                className={`date-tab-card ${isSelected ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedDateObj(dateObj);
-                  const firstSt = getShowtimesForDate(dateObj)[0];
-                  if (firstSt) setSelectedShowtimeId(firstSt.id);
-                }}
-              >
-                <span className="date-tab-month">{month}</span>
-                <span className="date-tab-num">{dayNum}</span>
-                <span className="date-tab-day">{dayName}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Available Showtimes for Selected Date */}
-        <div className="showtimes-container">
-          {currentAvailableShowtimes.length === 0 ? (
-            <div className="no-showtimes-msg" style={{ padding: '20px', color: '#94a3b8' }}>
-              No showtimes scheduled for this date.
+                return (
+                  <button
+                    key={dateObj.toDateString()}
+                    className={`date-tab-card ${isSelected ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedDateObj(dateObj);
+                      const firstSt = getShowtimesForDate(dateObj)[0];
+                      if (firstSt) setSelectedShowtimeId(firstSt.id);
+                    }}
+                  >
+                    <span className="date-tab-month">{month}</span>
+                    <span className="date-tab-num">{dayNum}</span>
+                    <span className="date-tab-day">{dayName}</span>
+                  </button>
+                );
+              })}
             </div>
-          ) : (
-            currentAvailableShowtimes.map((st) => {
-              const isSelected = (selectedShowtimeId === st.id) || (!selectedShowtimeId && st === activeShowtime);
-              return (
-                <button
-                  key={st.id}
-                  className={`showtime-btn ${isSelected ? "selected" : ""}`}
-                  onClick={() => {
-                    setSelectedShowtimeId(st.id);
-                    handleBooking(st);
-                  }}
-                >
-                  <div className="btn-time-row">
-                    <FiClock className="time-icon" />
-                    <span className="time-text">{st.time || st.startTime}</span>
-                  </div>
-                  <div className="btn-meta-row">
-                    <span className="type-badge"><FiFilm className="meta-icon" /> {st.type}</span>
-                    <span className="price-tag">Rs. {st.price}</span>
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
+
+            {/* Available Showtimes for Selected Date */}
+            <div className="showtimes-container">
+              {currentAvailableShowtimes.length === 0 ? (
+                <div className="no-showtimes-msg" style={{ padding: '20px', color: '#94a3b8' }}>
+                  No showtimes scheduled for this date.
+                </div>
+              ) : (
+                currentAvailableShowtimes.map((st) => {
+                  const isSelected = (selectedShowtimeId === st.id) || (!selectedShowtimeId && st === activeShowtime);
+                  return (
+                    <button
+                      key={st.id}
+                      className={`showtime-btn ${isSelected ? "selected" : ""}`}
+                      onClick={() => {
+                        setSelectedShowtimeId(st.id);
+                        handleBooking(st);
+                      }}
+                    >
+                      <div className="btn-time-row">
+                        <FiClock className="time-icon" />
+                        <span className="time-text">{st.time || st.startTime}</span>
+                      </div>
+                      <div className="btn-meta-row">
+                        <span className="type-badge"><FiFilm className="meta-icon" /> {st.type}</span>
+                        <span className="price-tag">Rs. {st.price}</span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </>
+        )}
       </section>
 
       {/* Related Movies Section */}

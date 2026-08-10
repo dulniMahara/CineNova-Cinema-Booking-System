@@ -8,6 +8,13 @@ jest.mock("../services/movieService", () => ({
 }));
 import { getMovieById } from "../services/movieService";
 
+jest.mock("../services/showtimeService", () => ({
+  getShowtimesByMovie: jest.fn(),
+}));
+import { getShowtimesByMovie } from "../services/showtimeService";
+
+import MovieDetails from "../pages/customers/MovieDetails";
+
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
@@ -26,12 +33,23 @@ const mockMovie = {
   trailerUrl: "https://www.youtube.com/embed/test",
 };
 
-import MovieDetails from "../pages/customers/MovieDetails";
-
 describe("MovieDetails Component", () => {
+  let mockShowtimes;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockShowtimes = [
+      {
+        _id: "60c72b2f9b1d8b001c8e4f1a",
+        movie: "1",
+        hall: { _id: "h1", name: "Hall 1" },
+        date: new Date().toISOString(),
+        startTime: "11:59 PM",
+        price: 1500
+      }
+    ];
     getMovieById.mockResolvedValue(mockMovie);
+    getShowtimesByMovie.mockResolvedValue({ success: true, data: mockShowtimes });
   });
 
   test("renders loading and then movie details", async () => {
@@ -62,11 +80,11 @@ describe("MovieDetails Component", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => screen.getByText(/10:30 AM/i));
+    await waitFor(() => screen.getByText(/11:59 PM/i));
 
-    fireEvent.click(screen.getByText(/10:30 AM/i));
+    fireEvent.click(screen.getByText(/11:59 PM/i));
     expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining("/booking/"),
+      "/booking/60c72b2f9b1d8b001c8e4f1a",
       expect.anything()
     );
   });
