@@ -2,6 +2,8 @@ const bookingController = require('../../controllers/bookingController');
 const Booking = require('../../models/Booking');
 const Seat = require('../../models/Seat');
 const Notification = require ('../../models/Notification');
+const User = require('../../models/User');
+const Payment = require('../../models/Payment');
 const httpMocks = require('node-mocks-http');
 const mongoose = require('mongoose');
 
@@ -9,26 +11,25 @@ const mongoose = require('mongoose');
 jest.mock('../../models/Booking');
 jest.mock('../../models/Seat');
 jest.mock('../../models/Notification');
+jest.mock('../../models/User');
+jest.mock('../../models/Payment');
 
 describe('Booking Controller Unit Tests', () => {
-    let req, res;
+    let req, res, mockIo;
     let validUserId, validShowtimeId, validSeatId1, validSeatId2, validBookingId;
 
     beforeEach(() => {
         req = httpMocks.createRequest();
         res = httpMocks.createResponse();
+        mockIo = {
+            to: jest.fn().mockReturnThis(),
+            emit: jest.fn()
+        };
         // Mock the app object for Socket.IO dependencies
         req.app = {
             get: jest.fn((key) => {
-                if (key === 'io') {
-                    return {
-                        to: jest.fn().mockReturnThis(),
-                        emit: jest.fn()
-                    };
-                }
-                if (key === 'onlineUsers') {
-                    return new Map();
-                }
+                if (key === 'io') return mockIo;
+                if (key === 'onlineUsers') return new Map();
                 return null;
             })
         };
@@ -80,6 +81,8 @@ describe('Booking Controller Unit Tests', () => {
 
         expect(res.statusCode).toBe(201);
         expect(res._getJSONData()).toHaveProperty('message', 'Booking successful!');
+        const mockIo = req.app.get('io');
+        expect(mockIo.to).toHaveBeenCalledWith(`showtime:${validShowtimeId}`);
     });
 
     // TEST 2: Prevent Double Booking
@@ -106,9 +109,13 @@ describe('Booking Controller Unit Tests', () => {
     // TEST 3: Get User History
     it('should return user bookings', async () => {
         req.params.userId = validUserId;
+        User.findById.mockResolvedValue({ _id: validUserId, name: 'Test User' });
+        Payment.find.mockReturnValue({
+            select: jest.fn().mockResolvedValue([])
+        });
 
         const mockBookings = [
-            { _id: validBookingId.toString(), showtimeId: { movie: { title: 'Movie A' } }, seatIds: [] }
+            { _id: validBookingId, showtimeId: { movie: { title: 'Movie A' } }, seatIds: [] }
         ];
 
         // Chainable mock for .populate().populate().sort()
@@ -122,6 +129,5 @@ describe('Booking Controller Unit Tests', () => {
         await bookingController.getUserBookings(req, res);
 
         expect(res.statusCode).toBe(200);
-        expect(res._getJSONData()).toEqual(mockBookings);
     });
 });

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import {
   FiArrowLeft,
   FiFilm,
@@ -51,6 +52,30 @@ const SeatSelection = () => {
   const passedMovie = location.state?.movie;
   const passedShowtime = location.state?.showtime;
 
+  // Reusable Seat Availability Refresh Function (Authoritative Fetch)
+  const refreshSeats = useCallback(async () => {
+    if (!showtimeId || !isValidObjectId(showtimeId)) return;
+    try {
+      const seatsRes = await axios.get(`${process.env.REACT_APP_API_URL}/seats/${showtimeId}`);
+      const raw = seatsRes.data;
+      const seatsData = Array.isArray(raw) ? raw : (raw?.data || raw?.seats || []);
+      if (seatsData && seatsData.length > 0) {
+        setSeats(seatsData);
+        // Remove any seats from user's selection that have now been booked by another client
+        const bookedSet = new Set(
+          seatsData
+            .filter(s => s.status === 'booked' || s.status === 'locked' || s.isBooked === true)
+            .map(s => s._id)
+        );
+        if (bookedSet.size > 0) {
+          setSelectedSeatIds(prev => prev.filter(id => !bookedSet.has(id)));
+        }
+      }
+    } catch (err) {
+      console.error("Error refreshing seat availability:", err);
+    }
+  }, [showtimeId]);
+
   // 1. Fetch real seats by showtimeId
   useEffect(() => {
     const fetchSeatsAndDetails = async () => {
@@ -94,6 +119,30 @@ const SeatSelection = () => {
 
     fetchSeatsAndDetails();
   }, [showtimeId]);
+
+  // 1b. Real-time Multi-Client Socket.IO Connection for Showtime Room
+  useEffect(() => {
+    if (!showtimeId || !isValidObjectId(showtimeId)) return;
+
+    const socketUrl = (process.env.REACT_APP_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '');
+    const socket = io(socketUrl);
+
+    socket.on('connect', () => {
+      socket.emit('join_showtime', String(showtimeId));
+    });
+
+    socket.on('seats_updated', (data) => {
+      if (data && String(data.showtimeId) === String(showtimeId)) {
+        refreshSeats();
+      }
+    });
+
+    return () => {
+      socket.emit('leave_showtime', String(showtimeId));
+      socket.off('seats_updated');
+      socket.disconnect();
+    };
+  }, [showtimeId, refreshSeats]);
 
   // 2. Handle Clicking a Seat
   const handleSeatClick = (seat) => {

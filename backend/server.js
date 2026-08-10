@@ -47,6 +47,16 @@ io.on('connection', (socket) => {
     onlineUsers.set(String(userId), socket.id);
   });
 
+  socket.on('join_showtime', (showtimeId) => {
+    if (!showtimeId || typeof showtimeId !== 'string') return;
+    socket.join(`showtime:${showtimeId}`);
+  });
+
+  socket.on('leave_showtime', (showtimeId) => {
+    if (!showtimeId || typeof showtimeId !== 'string') return;
+    socket.leave(`showtime:${showtimeId}`);
+  });
+
   socket.on('disconnect', () => {
     for (let [key, value] of onlineUsers.entries()) {
       if (value === socket.id) {

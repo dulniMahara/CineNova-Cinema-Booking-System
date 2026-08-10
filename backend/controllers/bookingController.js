@@ -161,6 +161,13 @@ exports.createBooking = async (req, res) => {
             io.to(socketId).emit('receive_notification', notification);
         }
 
+        if (io && showtimeId) {
+            io.to(`showtime:${showtimeId}`).emit('seats_updated', {
+                showtimeId: String(showtimeId),
+                bookedSeats: seatIds
+            });
+        }
+
         res.status(201).json({ message: "Booking successful!", booking: newBooking });
     } catch (error) {
         console.error("SERVER ERROR in Create:", error);
@@ -311,6 +318,13 @@ exports.cancelBooking = async (req, res) => {
             const socketId = onlineUsers.get(strUserId);
             io.to(socketId).emit('receive_notification', notification);
             console.log(`🔔 SENT POPUP to User ${strUserId}`);
+        }
+
+        if (io && bookingToCancel.showtimeId) {
+            io.to(`showtime:${bookingToCancel.showtimeId}`).emit('seats_updated', {
+                showtimeId: String(bookingToCancel.showtimeId),
+                freedSeats: bookingToCancel.seatIds
+            });
         }
         // ---------------------------------------------------
 

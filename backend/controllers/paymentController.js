@@ -144,6 +144,19 @@ exports.processPayment = async (req, res) => {
         }
         // --- 🔔 END INTEGRATION ---
 
+        // --- 📡 REAL-TIME MULTI-CLIENT SEAT UPDATE EMISSION ---
+        try {
+            const io = req.app.get('io');
+            if (io && showtimeId) {
+                io.to(`showtime:${showtimeId}`).emit('seats_updated', {
+                    showtimeId: String(showtimeId),
+                    bookedSeats: seats
+                });
+            }
+        } catch (socketErr) {
+            console.error("Socket room emit error (Non-blocking):", socketErr.message);
+        }
+
 
         // --- SCENARIO C: Send Confirmation Email ---
         const fullBooking = await Booking.findById(bookingId)
