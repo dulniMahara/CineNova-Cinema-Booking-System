@@ -1,15 +1,40 @@
 const request = require("supertest");
 const app = require("../app");
 const Movie = require("../models/movie");
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 jest.mock("../models/movie");
+jest.mock("../models/User");
 
 let createdMovieId = "123";
+let adminToken;
 
 describe("Movie API (Mocked DB)", () => {
+
   beforeAll(() => {
+
+    // Mock admin user returned by authentication middleware
+    User.findById.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        _id: "admin123",
+        name: "Test Admin",
+        email: "movieadmin@test.com",
+        role: "admin"
+      })
+    });
+
+    // Generate JWT for the mocked admin
+    adminToken = jwt.sign(
+      { id: "admin123", role: "admin" },
+      process.env.JWT_SECRET || "secretkey123",
+      { expiresIn: "30d" }
+    );
+
+    // Mock Movie constructor and save()
     Movie.mockImplementation(function (data) {
       Object.assign(this, data);
+
       this.save = jest.fn().mockResolvedValue({
         _id: createdMovieId,
         ...data,
@@ -34,9 +59,12 @@ describe("Movie API (Mocked DB)", () => {
       },
     ]);
 
-    // GET by ID
+    // GET movie by ID
     Movie.findById = jest.fn().mockImplementation((id) => {
-      if (id !== createdMovieId) return Promise.resolve(null);
+      if (id !== createdMovieId) {
+        return Promise.resolve(null);
+      }
+
       return Promise.resolve({
         _id: createdMovieId,
         title: "Test Movie",
@@ -48,7 +76,10 @@ describe("Movie API (Mocked DB)", () => {
 
     // UPDATE
     Movie.findByIdAndUpdate.mockImplementation((id, data) => {
-      if (id !== createdMovieId) return Promise.resolve(null);
+      if (id !== createdMovieId) {
+        return Promise.resolve(null);
+      }
+
       return Promise.resolve({
         _id: createdMovieId,
         ...data,
@@ -57,8 +88,13 @@ describe("Movie API (Mocked DB)", () => {
 
     // DELETE
     Movie.findByIdAndDelete.mockImplementation((id) => {
-      if (id !== createdMovieId) return Promise.resolve(null);
-      return Promise.resolve({ _id: createdMovieId });
+      if (id !== createdMovieId) {
+        return Promise.resolve(null);
+      }
+
+      return Promise.resolve({
+        _id: createdMovieId
+      });
     });
   });
 
@@ -66,8 +102,11 @@ describe("Movie API (Mocked DB)", () => {
     jest.clearAllMocks();
   });
 
+
   test("GET /api/movies - should return all movies", async () => {
-    const res = await request(app).get("/api/movies");
+
+    const res = await request(app)
+      .get("/api/movies");
 
     expect(res.statusCode).toBe(200);
     expect(res.body.length).toBe(2);
@@ -75,15 +114,20 @@ describe("Movie API (Mocked DB)", () => {
     expect(res.body[0]).toHaveProperty("bannerUrl");
   });
 
+
   test("GET /api/movies/:id - should return a single movie", async () => {
-    const res = await request(app).get(`/api/movies/${createdMovieId}`);
+
+    const res = await request(app)
+      .get(`/api/movies/${createdMovieId}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.title).toBe("Test Movie");
     expect(res.body).toHaveProperty("bannerUrl");
   });
 
+
   test("POST /api/movies - should create a new movie", async () => {
+
     const newMovie = {
       title: "Test Movie",
       description: "This is a test movie",
@@ -98,6 +142,7 @@ describe("Movie API (Mocked DB)", () => {
 
     const res = await request(app)
       .post("/api/movies")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newMovie);
 
     expect(res.statusCode).toBe(201);
@@ -109,7 +154,9 @@ describe("Movie API (Mocked DB)", () => {
     expect(Array.isArray(res.body.genre)).toBe(true);
   });
 
+
   test("PUT /api/movies/:id - should update a movie", async () => {
+
     const updatedData = {
       title: "Updated Movie",
       genre: ["Comedy"],
@@ -118,6 +165,7 @@ describe("Movie API (Mocked DB)", () => {
 
     const res = await request(app)
       .put(`/api/movies/${createdMovieId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(updatedData);
 
     expect(res.statusCode).toBe(200);
@@ -126,10 +174,15 @@ describe("Movie API (Mocked DB)", () => {
     expect(Array.isArray(res.body.genre)).toBe(true);
   });
 
+
   test("DELETE /api/movies/:id - should delete a movie", async () => {
-    const res = await request(app).delete(`/api/movies/${createdMovieId}`);
+
+    const res = await request(app)
+      .delete(`/api/movies/${createdMovieId}`)
+      .set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe("Movie deleted successfully");
   });
+
 });

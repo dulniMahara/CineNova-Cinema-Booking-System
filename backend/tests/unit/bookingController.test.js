@@ -82,7 +82,13 @@ describe('Booking Controller Unit Tests', () => {
         expect(res.statusCode).toBe(201);
         expect(res._getJSONData()).toHaveProperty('message', 'Booking successful!');
         const mockIo = req.app.get('io');
-        expect(mockIo.to).toHaveBeenCalledWith(`showtime:${validShowtimeId}`);
+        expect(mockIo.to)
+            .toHaveBeenCalledWith(`showtime:${validShowtimeId}`);
+
+            expect(mockIo.emit).toHaveBeenCalledWith(
+                'seats_updated',
+                expect.any(Object)
+            );
     });
 
     // TEST 2: Prevent Double Booking

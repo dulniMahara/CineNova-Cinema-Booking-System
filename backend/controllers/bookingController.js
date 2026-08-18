@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Showtime = require('../models/Showtime');
-const Movie = require('../models/Movie');
+const Movie = require('../models/movie');
 const Hall = require('../models/Hall');
-const Seat = require('../models/Seat'); 
+const Seat = require('../models/Seat');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
@@ -15,7 +15,7 @@ const formatBookingResponse = (b, paymentDoc) => {
     const showtime = bObj.showtimeId || {};
     const movie = showtime.movie || {};
     const hall = showtime.hall || {};
-    
+
     let rawSeats = (bObj.seatIds && bObj.seatIds.length > 0) ? bObj.seatIds : (bObj.seatDetails || []);
     const formattedSeats = rawSeats.map(s => {
         if (typeof s === 'object' && s !== null) {
@@ -93,7 +93,7 @@ exports.getAllBookings = async (req, res) => {
         const bookingIds = bookings.map(b => b._id);
         const payments = await Payment.find({ bookingId: { $in: bookingIds } })
             .select('bookingId amount paymentMethod status cardLast4 createdAt');
-        
+
         const paymentMap = new Map();
         payments.forEach(p => paymentMap.set(String(p.bookingId), p));
 
@@ -114,10 +114,10 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid showtime ID" });
         }
 
-        const existingBooking = await Booking.findOne({ 
-            showtimeId, 
+        const existingBooking = await Booking.findOne({
+            showtimeId,
             seatIds: { $in: seatIds },
-            status: 'Confirmed' 
+            status: 'Confirmed'
         });
 
         if (existingBooking) {
@@ -132,23 +132,23 @@ exports.createBooking = async (req, res) => {
             seatId: s._id
         }));
 
-        const newBooking = new Booking({ 
-            userId, 
-            showtimeId, 
+        const newBooking = new Booking({
+            userId,
+            showtimeId,
             seatIds,
             seatDetails,
-            totalPrice 
+            totalPrice
         });
         await newBooking.save();
 
         await Seat.updateMany(
-            { _id: { $in: seatIds } }, 
+            { _id: { $in: seatIds } },
             { $set: { status: 'booked' } }
         );
 
         const message = `Booking Confirmed! Your Booking ID is ${newBooking._id}`;
         const notification = await Notification.create({
-            userId: userId, 
+            userId: userId,
             message: message
         });
 
@@ -193,7 +193,7 @@ exports.getUserBookings = async (req, res) => {
 
         console.log("🔍 CHECKING HISTORY FOR USER:", queryUserId);
 
-        const bookings = await Booking.find({ 
+        const bookings = await Booking.find({
             userId: queryUserId,
             hiddenFromUser: { $ne: true }
         })
@@ -206,12 +206,12 @@ exports.getUserBookings = async (req, res) => {
                 ]
             })
             .populate('seatIds')
-            .sort({ createdAt: -1 });        
+            .sort({ createdAt: -1 });
 
         const bookingIds = bookings.map(b => b._id);
         const payments = await Payment.find({ bookingId: { $in: bookingIds } })
             .select('bookingId amount paymentMethod status cardLast4 createdAt');
-        
+
         const paymentMap = new Map();
         payments.forEach(p => paymentMap.set(String(p.bookingId), p));
 
@@ -280,7 +280,7 @@ exports.cancelBooking = async (req, res) => {
     try {
         // 1. Find the booking first to get the seat IDs
         const bookingToCancel = await Booking.findById(req.params.id);
-        
+
         if (!bookingToCancel) {
             return res.status(404).json({ message: "Booking not found" });
         }
@@ -337,7 +337,7 @@ exports.cancelBooking = async (req, res) => {
 exports.clearUserHistory = async (req, res) => {
     try {
         // CHANGED: We now get the ID from the "body", not the URL
-        const { userId } = req.body; 
+        const { userId } = req.body;
 
         console.log(`HIDING CANCELLED BOOKINGS for user: ${userId}`);
 
@@ -346,15 +346,15 @@ exports.clearUserHistory = async (req, res) => {
         }
 
         // Mark cancelled bookings as hidden (soft delete) - they stay in DB for admin
-        const result = await Booking.updateMany({ 
-            userId, 
-            status: 'Cancelled' 
+        const result = await Booking.updateMany({
+            userId,
+            status: 'Cancelled'
         }, {
             $set: { hiddenFromUser: true }
         });
-        
+
         console.log(`Hidden ${result.modifiedCount} cancelled bookings (still in DB for admin)`);
-        res.status(200).json({ 
+        res.status(200).json({
             message: `Cleared ${result.modifiedCount} cancelled booking(s) from your view`,
             hiddenCount: result.modifiedCount
         });

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Showtime = require('../models/Showtime');
 const Hall = require('../models/Hall');
-const Movie = require('../models/Movie');
+const Movie = require('../models/movie');
 
 exports.addShowtime = async (req, res) => {
   try {
@@ -32,7 +32,7 @@ exports.getAllShowtimes = async (req, res) => {
       filter.movie = movieIdParam;
     }
     const showtimes = await Showtime.find(filter)
-      .populate('movie') 
+      .populate('movie')
       .populate('hall');
 
     res.status(200).json({ success: true, data: showtimes });
@@ -65,8 +65,8 @@ exports.updateShowtime = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid showtime ID' });
     }
     const showtime = await Showtime.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, 
-      runValidators: true 
+      new: true,
+      runValidators: true
     });
 
     if (!showtime) {
@@ -92,7 +92,7 @@ exports.getShowtimeById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ success: false, message: 'Invalid showtime ID' });
     }
-    const showtime = await Showtime.findById(req.params.id).populate('hall'); 
+    const showtime = await Showtime.findById(req.params.id).populate('hall');
 
     if (!showtime) {
       return res.status(404).json({ success: false, message: 'Showtime not found' });
@@ -112,7 +112,7 @@ exports.getShowtimesByMovie = async (req, res) => {
     const showtimes = await Showtime.find({ movie: req.params.movieId })
       .populate('movie')
       .populate('hall')
-      .sort({ date: 1, startTime: 1 }); 
+      .sort({ date: 1, startTime: 1 });
 
     res.status(200).json({ success: true, data: showtimes });
   } catch (error) {
