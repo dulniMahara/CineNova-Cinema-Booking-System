@@ -565,41 +565,6 @@ The administrator interface focuses on cinema management, while the customer int
 
 ---
 
-## 📸 Screenshots
-
-Screenshots of the completed application can be added to this section.
-
-### Recommended Customer Screenshots
-
-- Customer Home Page
-- Now Showing Movies
-- Coming Soon Movies
-- Movie Details
-- Showtime Selection
-- Seat Selection
-- Payment Page
-- Booking Confirmation
-- My Bookings
-- Customer Notifications
-
-### Recommended Administrator Screenshots
-
-- Admin Dashboard
-- Movie Management
-- Showtime Management
-- Hall Management
-- User Management
-- Booking Management
-- Payment Management
-- Admin Notifications
-
-Example image syntax:
-
-```markdown
-![CineNova Customer Home](docs/screenshots/customer-home.png)
-```
-
----
 
 ## 🔮 Future Improvements
 
