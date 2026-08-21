@@ -4,6 +4,7 @@ const http = require('http');
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const { Server } = require("socket.io");
 const app = require("./app");
+const runFutureShowtimeSeeder = require("./scripts/seedFutureShowtimes");
 
 const connectDatabase = async () => {
   try {
@@ -17,17 +18,18 @@ const connectDatabase = async () => {
 
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("MongoDB Atlas connected");
+
+    await runFutureShowtimeSeeder();
+
   } catch (err) {
     console.error("MongoDB connection failed:", err);
     process.exit(1);
   }
 };
 
-connectDatabase();
-
 // Create Server
 const PORT = process.env.PORT || 5001;
-const server = http.createServer(app); 
+const server = http.createServer(app);
 
 // Socket.IO Setup
 const io = new Server(server, {
@@ -71,7 +73,18 @@ io.on('connection', (socket) => {
 app.set('io', io);
 app.set('onlineUsers', onlineUsers);
 
-// Start Server
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Start Server only after MongoDB and showtime refresh are ready
+const startServer = async () => {
+  try {
+    await connectDatabase();
+
+    server.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Server startup failed:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
